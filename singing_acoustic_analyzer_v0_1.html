@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>歌唱音響分析器 v0.1</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+main{max-width:1050px;margin:0 auto;padding:24px}
+h1{font-size:1.55rem;margin:0 0 6px}
+.subtitle,.hint,.status{color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+canvas{width:100%;height:220px;border:1px solid var(--line);border-radius:8px;background:#fff;display:block}
+.small canvas{height:180px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}
+.metric{border:1px solid var(--line);border-radius:8px;padding:10px}
+.metric .label{font-size:.82rem;color:var(--muted)}
+.metric .value{font-size:1.15rem;margin-top:2px}
+.section-title{font-weight:650;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th,td{padding:7px 8px;border-bottom:1px solid #eaecf0;text-align:right}
+th:first-child,td:first-child{text-align:left}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1 1 320px}
+</style>
+</head>
+<body>
+<main>
+<h1>歌唱音響分析器 v0.1</h1>
+<div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
+
+<section class="panel">
+<div class="section-title">1. 音声を入れる</div>
+<div class="controls">
+<input id="fileInput" type="file" accept="audio/*">
+<button id="recordBtn">録音開始</button>
+<button id="stopBtn" disabled>録音停止</button>
+<button id="playBtn" disabled>再生</button>
+<button id="stopPlayBtn" disabled>停止</button>
+</div>
+<div id="status" class="status" style="margin-top:10px">音声ファイルを選ぶか、マイクで録音してください。</div>
+<div class="meta">
+<div class="metric"><div class="label">長さ</div><div id="duration" class="value">—</div></div>
+<div class="metric"><div class="label">サンプルレート</div><div id="sampleRate" class="value">—</div></div>
+<div class="metric"><div class="label">解析地点</div><div id="cursorTime" class="value">—</div></div>
+<div class="metric"><div class="label">解析地点のF0</div><div id="cursorF0" class="value">—</div></div>
+</div>
+</section>
+
+<section class="panel">
+<div class="section-title">2. 波形＋音量包絡</div>
+<canvas id="waveCanvas" width="1000" height="220"></canvas>
+<p class="hint">グラフをクリックすると、その時刻を倍音解析地点にします。灰色＝波形、青＝RMS音量包絡。</p>
+</section>
+
+<section class="panel small">
+<div class="section-title">3. F0（基本周波数）</div>
+<canvas id="f0Canvas" width="1000" height="180"></canvas>
+<p class="hint">簡易自己相関法で推定します。まず、いきみ声と遠吠え声で立ち上がりや音高遷移の違いを見るための表示です。</p>
+</section>
+
+<section class="panel">
+<div class="section-title">4. クリック地点の周波数スペクトル</div>
+<canvas id="spectrumCanvas" width="1000" height="220"></canvas>
+<p class="hint">選択地点を中心に短区間FFTを行います。表示上限は5 kHzです。</p>
+</section>
+
+<section class="panel">
+<div class="section-title">5. 倍音構造</div>
+<div class="row">
+<div>
+<table>
+<thead><tr><th>成分</th><th>周波数</th><th>相対強度</th></tr></thead>
+<tbody id="harmonicsBody"><tr><td colspan="3" style="text-align:center;color:#667085">音声を読み込んで波形をクリックしてください。</td></tr></tbody>
+</table>
+</div>
+<div class="hint">
+<strong>今見ること</strong><br>
+・遠吠え声といきみ声で低次倍音がどう違うか<br>
+・発声開始直後と定常部で倍音構造がどう変わるか<br>
+・「豊かに鳴る」と感じた声で、どの倍音が強くなるか<br><br>
+v0.1では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。
+</div>
+</div>
+</section>
+</main>
+
+<script>
+let audioCtx=null,audioBuffer=null,mono=null,sourceNode=null,mediaRecorder=null,recordChunks=[],cursorSec=0,f0Track=[];
+const $=id=>document.getElementById(id);
+function getAudioContext(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+function stopPlayback(){if(sourceNode){try{sourceNode.stop()}catch(e){} sourceNode.disconnect();sourceNode=null} if(audioBuffer)$("playBtn").disabled=false;$("stopPlayBtn").disabled=true}
+
+$("fileInput").addEventListener("change",async e=>{
+ const file=e.target.files?.[0]; if(!file)return; $("status").textContent="読み込み中…";
+ try{const arr=await file.arrayBuffer();audioBuffer=await getAudioContext().decodeAudioData(arr.slice(0));prepareBuffer();$("status").textContent="読込完了: "+file.name}
+ catch(err){console.error(err);$("status").textContent="音声を読み込めませんでした。WAV / MP3 / M4A などで試してください。"}
+});
+
+$("recordBtn").addEventListener("click",async()=>{
+ try{
+  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  recordChunks=[];mediaRecorder=new MediaRecorder(stream);
+  mediaRecorder.ondataavailable=e=>{if(e.data.size)recordChunks.push(e.data)};
+  mediaRecorder.onstop=async()=>{
+   stream.getTracks().forEach(t=>t.stop());
+   const blob=new Blob(recordChunks,{type:mediaRecorder.mimeType||"audio/webm"});
+   try{audioBuffer=await getAudioContext().decodeAudioData((await blob.arrayBuffer()).slice(0));prepareBuffer();$("status").textContent="録音を解析しました。"}
+   catch(err){console.error(err);$("status").textContent="録音データを解析できませんでした。"}
+  };
+  mediaRecorder.start();$("recordBtn").disabled=true;$("stopBtn").disabled=false;$("status").textContent="録音中…";
+ }catch(err){console.error(err);$("status").textContent="マイクを使用できません。GitHub Pages（HTTPS）上で開くか、ブラウザのマイク許可を確認してください。"}
+});
+$("stopBtn").addEventListener("click",()=>{if(mediaRecorder&&mediaRecorder.state!=="inactive")mediaRecorder.stop();$("recordBtn").disabled=false;$("stopBtn").disabled=true});
+$("playBtn").addEventListener("click",async()=>{
+ if(!audioBuffer)return;stopPlayback();const ctx=getAudioContext();await ctx.resume();sourceNode=ctx.createBufferSource();sourceNode.buffer=audioBuffer;sourceNode.connect(ctx.destination);sourceNode.start();$("playBtn").disabled=true;$("stopPlayBtn").disabled=false;
+ sourceNode.onended=()=>{sourceNode=null;$("playBtn").disabled=false;$("stopPlayBtn").disabled=true};
+});
+$("stopPlayBtn").addEventListener("click",stopPlayback);
+
+function prepareBuffer(){
+ const channels=audioBuffer.numberOfChannels,length=audioBuffer.length;mono=new Float32Array(length);
+ for(let ch=0;ch<channels;ch++){const d=audioBuffer.getChannelData(ch);for(let i=0;i<length;i++)mono[i]+=d[i]/channels}
+ $("duration").textContent=audioBuffer.duration.toFixed(2)+" s";$("sampleRate").textContent=audioBuffer.sampleRate+" Hz";$("playBtn").disabled=false;
+ cursorSec=Math.max(.05,audioBuffer.duration*.5);drawWaveAndEnvelope();computeAndDrawF0();analyzeAt(cursorSec);
+}
+
+function clearCanvas(c){const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle="#d0d5dd";ctx.strokeRect(.5,.5,c.width-1,c.height-1);return ctx}
+function drawAxes(ctx,w,h){ctx.strokeStyle="#eaecf0";ctx.lineWidth=1;for(let i=1;i<4;i++){const y=h*i/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}}
+function canvasPoint(canvas,evt){const r=canvas.getBoundingClientRect();return{x:(evt.clientX-r.left)/r.width*canvas.width,y:(evt.clientY-r.top)/r.height*canvas.height}}
+$("waveCanvas").addEventListener("click",evt=>{if(!audioBuffer)return;cursorSec=canvasPoint($("waveCanvas"),evt).x/$("waveCanvas").width*audioBuffer.duration;drawWaveAndEnvelope();analyzeAt(cursorSec)});
+
+function drawWaveAndEnvelope(){
+ const c=$("waveCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);if(!mono)return;
+ const spp=mono.length/w;ctx.strokeStyle="#667085";ctx.lineWidth=1;ctx.beginPath();
+ for(let x=0;x<w;x++){const a=Math.floor(x*spp),b=Math.min(mono.length,Math.floor((x+1)*spp));let min=1,max=-1;for(let i=a;i<b;i++){const v=mono[i];if(v<min)min=v;if(v>max)max=v}ctx.moveTo(x,h/2-min*h*.42);ctx.lineTo(x,h/2-max*h*.42)}
+ ctx.stroke();
+ const sr=audioBuffer.sampleRate,win=Math.max(32,Math.floor(sr*.02)),hop=Math.max(16,Math.floor(sr*.01));let env=[],maxR=1e-9;
+ for(let s=0;s<mono.length;s+=hop){let ss=0,n=0,end=Math.min(mono.length,s+win);for(let i=s;i<end;i++){ss+=mono[i]*mono[i];n++}let r=Math.sqrt(ss/Math.max(1,n));env.push([s/sr,r]);if(r>maxR)maxR=r}
+ ctx.strokeStyle="#2563eb";ctx.lineWidth=2.2;ctx.beginPath();env.forEach(([t,r],i)=>{let x=t/audioBuffer.duration*w,y=h-10-r/maxR*(h-20);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
+ const cx=cursorSec/audioBuffer.duration*w;ctx.strokeStyle="#d92d20";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,h);ctx.stroke();
+}
+
+function autocorrelationF0(data,sr,start,size){
+ const end=Math.min(data.length,start+size),n=end-start;if(n<256)return null;
+ let mean=0;for(let i=start;i<end;i++)mean+=data[i];mean/=n;
+ let rms=0,x=new Float32Array(n);for(let i=0;i<n;i++){x[i]=data[start+i]-mean;rms+=x[i]*x[i]}rms=Math.sqrt(rms/n);if(rms<.008)return null;
+ const minHz=70,maxHz=700,minLag=Math.floor(sr/maxHz),maxLag=Math.min(n-2,Math.floor(sr/minHz));let bestLag=-1,best=-1;
+ for(let lag=minLag;lag<=maxLag;lag++){let num=0,a=0,b=0,m=n-lag;for(let i=0;i<m;i++){let u=x[i],v=x[i+lag];num+=u*v;a+=u*u;b+=v*v}let corr=num/Math.sqrt(a*b+1e-12);if(corr>best){best=corr;bestLag=lag}}
+ if(best<.55||bestLag<0)return null;return sr/bestLag;
+}
+function computeAndDrawF0(){const sr=audioBuffer.sampleRate,win=Math.floor(sr*.06),hop=Math.floor(sr*.02);f0Track=[];for(let s=0;s+win<mono.length;s+=hop)f0Track.push([s/sr,autocorrelationF0(mono,sr,s,win)]);drawF0()}
+function drawF0(){
+ const c=$("f0Canvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);if(!audioBuffer)return;const minF=70,maxF=700;ctx.strokeStyle="#2563eb";ctx.lineWidth=1.7;let pen=false;ctx.beginPath();
+ for(const [t,f] of f0Track){if(!f||f<minF||f>maxF){pen=false;continue}let x=t/audioBuffer.duration*w,y=h-10-Math.log(f/minF)/Math.log(maxF/minF)*(h-20);if(!pen){ctx.moveTo(x,y);pen=true}else ctx.lineTo(x,y)}ctx.stroke();
+ const cx=cursorSec/audioBuffer.duration*w;ctx.strokeStyle="#d92d20";ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,h);ctx.stroke();ctx.fillStyle="#667085";ctx.font="12px system-ui";ctx.fillText("700 Hz",6,14);ctx.fillText("70 Hz",6,h-6)
+}
+function nearestF0(t){let best=null,dist=Infinity;for(const [tt,f] of f0Track){if(!f)continue;let d=Math.abs(tt-t);if(d<dist){dist=d;best=f}}return best}
+function hann(n,N){return .5*(1-Math.cos(2*Math.PI*n/(N-1)))}
+function fft(re,im){
+ const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}
+ for(let len=2;len<=n;len<<=1){const ang=-2*Math.PI/len,wc=Math.cos(ang),ws=Math.sin(ang);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let j=0;j<len/2;j++){let ur=re[i+j],ui=im[i+j],k=i+j+len/2,vr=re[k]*cr-im[k]*ci,vi=re[k]*ci+im[k]*cr;re[i+j]=ur+vr;im[i+j]=ui+vi;re[k]=ur-vr;im[k]=ui-vi;let nr=cr*wc-ci*ws;ci=cr*ws+ci*wc;cr=nr}}}
+}
+function analyzeAt(t){
+ cursorSec=Math.max(0,Math.min(audioBuffer.duration,t));$("cursorTime").textContent=cursorSec.toFixed(3)+" s";let f0=nearestF0(cursorSec);$("cursorF0").textContent=f0?f0.toFixed(1)+" Hz":"—";drawF0();drawWaveAndEnvelope();
+ const sr=audioBuffer.sampleRate;let N=8192;while(N>2048&&N>mono.length)N>>=1;let center=Math.floor(cursorSec*sr),start=Math.max(0,Math.min(Math.max(0,mono.length-N),center-Math.floor(N/2)));
+ const re=new Float64Array(N),im=new Float64Array(N);let mean=0;for(let i=0;i<N;i++)mean+=mono[start+i]||0;mean/=N;for(let i=0;i<N;i++)re[i]=((mono[start+i]||0)-mean)*hann(i,N);fft(re,im);
+ const mags=new Float64Array(N/2);let maxMag=1e-12;for(let k=1;k<N/2;k++){let m=Math.hypot(re[k],im[k]);mags[k]=m;if(m>maxMag)maxMag=m}drawSpectrum(mags,sr,N,maxMag);updateHarmonics(mags,sr,N,maxMag,f0)
+}
+function drawSpectrum(mags,sr,N,maxMag){
+ const c=$("spectrumCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);const maxHz=Math.min(5000,sr/2),maxK=Math.floor(maxHz*N/sr);ctx.strokeStyle="#2563eb";ctx.lineWidth=1.3;ctx.beginPath();
+ for(let k=1;k<=maxK;k++){let hz=k*sr/N,x=hz/maxHz*w,db=20*Math.log10((mags[k]+1e-12)/maxMag);db=Math.max(-70,Math.min(0,db));let y=10+(-db/70)*(h-20);if(k===1)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.stroke();
+ ctx.fillStyle="#667085";ctx.font="12px system-ui";ctx.fillText("0 Hz",6,h-6);ctx.fillText(Math.round(maxHz)+" Hz",w-65,h-6);ctx.fillText("0 dB",6,14);ctx.fillText("-70 dB",6,h-20)
+}
+function updateHarmonics(mags,sr,N,maxMag,f0){
+ const body=$("harmonicsBody");if(!f0){body.innerHTML='<tr><td colspan="3" style="text-align:center;color:#667085">この地点ではF0を安定して推定できませんでした。</td></tr>';return}
+ let rows="";for(let h=1;h<=10;h++){let target=f0*h;if(target>=sr/2)break;let k0=Math.round(target*N/sr),radius=Math.max(2,Math.round(25*N/sr)),bestK=k0,bestM=0;for(let k=Math.max(1,k0-radius);k<=Math.min(mags.length-1,k0+radius);k++){if(mags[k]>bestM){bestM=mags[k];bestK=k}}let hz=bestK*sr/N,db=20*Math.log10((bestM+1e-12)/maxMag);rows+=`<tr><td>H${h}</td><td>${hz.toFixed(1)} Hz</td><td>${db.toFixed(1)} dB</td></tr>`}body.innerHTML=rows
+}
+</script>
+</body>
+</html>
