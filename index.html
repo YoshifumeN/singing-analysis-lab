@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.1</title>
+<title>歌唱音響分析器 v0.2</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -31,7 +31,7 @@ th:first-child,td:first-child{text-align:left}
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.1</h1>
+<h1>歌唱音響分析器 v0.2</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 <section class="panel">
@@ -55,23 +55,23 @@ th:first-child,td:first-child{text-align:left}
 <section class="panel">
 <div class="section-title">2. 波形＋音量包絡</div>
 <canvas id="waveCanvas" width="1000" height="220"></canvas>
-<p class="hint">グラフをクリックすると、その時刻を倍音解析地点にします。灰色＝波形、青＝RMS音量包絡。</p>
+<p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>相対振幅／相対音量。灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡、赤＝現在の解析地点。グラフをクリックすると、その時刻を倍音解析地点にします。</p>
 </section>
 
 <section class="panel small">
 <div class="section-title">3. F0（基本周波数）</div>
 <canvas id="f0Canvas" width="1000" height="180"></canvas>
-<p class="hint">簡易自己相関法で推定します。まず、いきみ声と遠吠え声で立ち上がりや音高遷移の違いを見るための表示です。</p>
+<p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>F0（Hz、対数表示）。青＝推定された基本周波数（おおむね声の音高）、赤＝現在の解析地点。簡易自己相関法で推定しています。</p>
 </section>
 
 <section class="panel">
 <div class="section-title">4. クリック地点の周波数スペクトル</div>
 <canvas id="spectrumCanvas" width="1000" height="220"></canvas>
-<p class="hint">選択地点を中心に短区間FFTを行います。表示上限は5 kHzです。</p>
+<p class="hint"><strong>横軸：</strong>周波数（Hz）　<strong>縦軸：</strong>その区間で最も強い周波数成分を0 dBとした相対強度（dB）。青線の山が、その声に含まれる周波数成分です。選択地点を中心に短区間FFTを行い、表示上限は5 kHzです。<strong>このスペクトルのうち、F0・2F0・3F0…付近の山を抜き出したものが下の「5. 倍音構造」です。</strong></p>
 </section>
 
 <section class="panel">
-<div class="section-title">5. 倍音構造</div>
+<div class="section-title">5. 倍音構造（4のスペクトルから倍音だけを抽出）</div>
 <div class="row">
 <div>
 <table>
@@ -80,11 +80,11 @@ th:first-child,td:first-child{text-align:left}
 </table>
 </div>
 <div class="hint">
-<strong>今見ること</strong><br>
+<strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。相対強度は4のスペクトル内の最大ピークを0 dBとして表示します。<br><br><strong>今見ること</strong><br>
 ・遠吠え声といきみ声で低次倍音がどう違うか<br>
 ・発声開始直後と定常部で倍音構造がどう変わるか<br>
 ・「豊かに鳴る」と感じた声で、どの倍音が強くなるか<br><br>
-v0.1では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。
+v0.2では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。
 </div>
 </div>
 </section>
@@ -144,6 +144,10 @@ function drawWaveAndEnvelope(){
  for(let s=0;s<mono.length;s+=hop){let ss=0,n=0,end=Math.min(mono.length,s+win);for(let i=s;i<end;i++){ss+=mono[i]*mono[i];n++}let r=Math.sqrt(ss/Math.max(1,n));env.push([s/sr,r]);if(r>maxR)maxR=r}
  ctx.strokeStyle="#2563eb";ctx.lineWidth=2.2;ctx.beginPath();env.forEach(([t,r],i)=>{let x=t/audioBuffer.duration*w,y=h-10-r/maxR*(h-20);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
  const cx=cursorSec/audioBuffer.duration*w;ctx.strokeStyle="#d92d20";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,h);ctx.stroke();
+ ctx.fillStyle="#667085";ctx.font="12px system-ui";
+ ctx.fillText("0 s",6,h-6);
+ ctx.fillText(audioBuffer.duration.toFixed(2)+" s",w-65,h-6);
+ ctx.save();ctx.translate(13,h/2);ctx.rotate(-Math.PI/2);ctx.fillText("相対振幅 / RMS",0,0);ctx.restore();
 }
 
 function autocorrelationF0(data,sr,start,size){
@@ -175,7 +179,11 @@ function analyzeAt(t){
 function drawSpectrum(mags,sr,N,maxMag){
  const c=$("spectrumCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);const maxHz=Math.min(5000,sr/2),maxK=Math.floor(maxHz*N/sr);ctx.strokeStyle="#2563eb";ctx.lineWidth=1.3;ctx.beginPath();
  for(let k=1;k<=maxK;k++){let hz=k*sr/N,x=hz/maxHz*w,db=20*Math.log10((mags[k]+1e-12)/maxMag);db=Math.max(-70,Math.min(0,db));let y=10+(-db/70)*(h-20);if(k===1)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.stroke();
- ctx.fillStyle="#667085";ctx.font="12px system-ui";ctx.fillText("0 Hz",6,h-6);ctx.fillText(Math.round(maxHz)+" Hz",w-65,h-6);ctx.fillText("0 dB",6,14);ctx.fillText("-70 dB",6,h-20)
+ ctx.fillStyle="#667085";ctx.font="12px system-ui";
+ ctx.fillText("0 Hz",32,h-6);ctx.fillText(Math.round(maxHz)+" Hz",w-65,h-6);
+ ctx.fillText("0 dB",6,14);ctx.fillText("-70 dB",6,h-20);
+ ctx.fillText("周波数 (Hz)",w/2-35,h-6);
+ ctx.save();ctx.translate(13,h/2+25);ctx.rotate(-Math.PI/2);ctx.fillText("相対強度 (dB)",0,0);ctx.restore();
 }
 function updateHarmonics(mags,sr,N,maxMag,f0){
  const body=$("harmonicsBody");if(!f0){body.innerHTML='<tr><td colspan="3" style="text-align:center;color:#667085">この地点ではF0を安定して推定できませんでした。</td></tr>';return}
