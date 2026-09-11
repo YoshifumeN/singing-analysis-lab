@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.5.1</title>
+<title>歌唱音響分析器 v0.6</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -37,7 +37,7 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.5.1</h1>
+<h1>歌唱音響分析器 v0.6</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 <section class="panel">
@@ -82,15 +82,23 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 <button id="clearB">Bを解除</button>
 <button id="clearC">Cを解除</button>
 </div>
-<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div><div class="graph-meta"><span>縦軸：相対振幅 / RMS</span><span>横軸：時間（秒）</span></div><canvas id="waveCanvas1" width="1000" height="220"></canvas></div>
-<div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div><div class="graph-meta"><span>縦軸：相対振幅 / RMS</span><span>横軸：時間（秒）</span></div><canvas id="waveCanvas2" width="1000" height="220"></canvas></div>
+<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div>
+  <canvas id="waveCanvas1" width="1000" height="220"></canvas>
+<div class="graph-meta"><span>縦軸：相対振幅 / RMS</span><span>横軸：時間（秒）</span></div></div>
+<div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div>
+  <canvas id="waveCanvas2" width="1000" height="220"></canvas>
+<div class="graph-meta"><span>縦軸：相対振幅 / RMS</span><span>横軸：時間（秒）</span></div></div>
 <p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>相対振幅／相対音量。灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡。A/B/Cのいずれかを選んでから、録音1または録音2の波形をクリックすると、その地点を比較対象として登録します。</p>
 </section>
 
 <section class="panel small">
 <div class="section-title">3. F0（基本周波数）</div>
-<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div><div class="graph-meta"><span>縦軸：F0（70–700 Hz、対数表示）</span><span>横軸：時間（秒）</span></div><canvas id="f0Canvas1" width="1000" height="180"></canvas></div>
-<div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div><div class="graph-meta"><span>縦軸：F0（70–700 Hz、対数表示）</span><span>横軸：時間（秒）</span></div><canvas id="f0Canvas2" width="1000" height="180"></canvas></div>
+<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div>
+  <canvas id="f0Canvas1" width="1000" height="180"></canvas>
+<div class="graph-meta"><span>縦軸：F0（70–700 Hz、対数表示）</span><span>横軸：時間（秒）</span></div></div>
+<div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div>
+  <canvas id="f0Canvas2" width="1000" height="180"></canvas>
+<div class="graph-meta"><span>縦軸：F0（70–700 Hz、対数表示）</span><span>横軸：時間（秒）</span></div></div>
 <p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>F0（Hz、対数表示）。青＝推定された基本周波数。A/B/Cの縦線は、それぞれ選択した録音のグラフに表示されます。簡易自己相関法で推定しています。</p>
 </section>
 
@@ -108,21 +116,21 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 <span id="actualFreqLimit" class="status"></span>
 </div>
 <div id="spectrumLegend" class="legend"></div>
-<div class="graph-meta"><span>縦軸：相対強度（dB、各地点の最大ピーク＝0 dB）</span><span>横軸：周波数（Hz）</span></div>
 <canvas id="spectrumCanvas" width="1000" height="220"></canvas>
-<p class="hint"><strong>横軸：</strong>周波数（Hz）　<strong>縦軸：</strong>各地点ごとに最大ピークを0 dBとした相対強度（dB）。A/B/Cを重ね描きします。選択地点を中心に短区間FFTを行います。表示・倍音解析の上限は上のメニューで変更できます。<strong>このスペクトルのうち、F0・2F0・3F0…付近の山を抜き出したものが下の「5. 倍音構造」です。</strong></p>
+<div class="graph-meta"><span>縦軸：相対強度（dB）</span><span>横軸：周波数（Hz）</span></div>
+<p class="hint">A/B/Cの周波数スペクトルを重ねて比較します。各地点の最大ピークを0 dBとして正規化しています。</p>
 </section>
 
 <section class="panel">
 <div class="section-title">5. 倍音構造（4のスペクトルから倍音だけを抽出）</div>
 <div class="meta">
-  <div class="metric"><div class="label">A: −30 / −40 / −50 dB以上</div><div id="countA" class="value">—</div><div id="highestA" class="hint">最高倍音: —</div></div>
-  <div class="metric"><div class="label">B: −30 / −40 / −50 dB以上</div><div id="countB" class="value">—</div><div id="highestB" class="hint">最高倍音: —</div></div>
-  <div class="metric"><div class="label">C: −30 / −40 / −50 dB以上</div><div id="countC" class="value">—</div><div id="highestC" class="hint">最高倍音: —</div></div>
+  <div class="metric"><div class="label">A: −30 / −40 / −50 dB以上</div><div id="countA" class="value">—</div><div id="highestA" class="hint">最高倍音: —</div><div id="tiltA" class="hint">スペクトル傾斜: —</div></div>
+  <div class="metric"><div class="label">B: −30 / −40 / −50 dB以上</div><div id="countB" class="value">—</div><div id="highestB" class="hint">最高倍音: —</div><div id="tiltB" class="hint">スペクトル傾斜: —</div></div>
+  <div class="metric"><div class="label">C: −30 / −40 / −50 dB以上</div><div id="countC" class="value">—</div><div id="highestC" class="hint">最高倍音: —</div><div id="tiltC" class="hint">スペクトル傾斜: —</div></div>
 </div>
 <div class="controls" style="margin-top:12px"><button id="toggleHarmonics">H11以降も表示</button></div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.5.1では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.6では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
@@ -238,6 +246,32 @@ function drawSpectrumComparison(){
 }
 function harmonicInfo(sp,h){if(!sp||!sp.f0)return null;const target=sp.f0*h;if(target>effectiveFrequencyLimit()||target>=sp.sr/2)return null;const k0=Math.round(target*sp.N/sp.sr),radius=Math.max(2,Math.round(25*sp.N/sp.sr));let bestK=k0,bestM=0;for(let k=Math.max(1,k0-radius);k<=Math.min(sp.mags.length-1,k0+radius);k++){if(sp.mags[k]>bestM){bestM=sp.mags[k];bestK=k}}return {hz:bestK*sp.sr/sp.N,db:20*Math.log10((bestM+1e-12)/sp.maxMag)}}
 function maxHarmonicNumber(sp){if(!sp||!sp.f0)return 0;return Math.floor(Math.min(effectiveFrequencyLimit(),sp.sr/2)/sp.f0)}
+
+function spectralTiltDbPerOctave(sp){
+  if(!sp||!sp.f0)return null;
+  const maxH=maxHarmonicNumber(sp);
+  let xs=[],ys=[];
+  for(let h=1;h<=maxH;h++){
+    const info=harmonicInfo(sp,h);
+    if(!info)continue;
+    // Ignore extremely weak peaks that are more likely to be noise-floor dominated.
+    if(info.db < -60)continue;
+    xs.push(Math.log2(info.hz/sp.f0));
+    ys.push(info.db);
+  }
+  if(xs.length<4)return null;
+  const mx=xs.reduce((a,b)=>a+b,0)/xs.length;
+  const my=ys.reduce((a,b)=>a+b,0)/ys.length;
+  let num=0,den=0;
+  for(let i=0;i<xs.length;i++){
+    const dx=xs[i]-mx;
+    num+=dx*(ys[i]-my);
+    den+=dx*dx;
+  }
+  if(!den)return null;
+  return num/den;
+}
+
 function summarize(label){const sp=points[label].spectrum;if(!sp||!sp.f0){$("count"+label).textContent="—";$("highest"+label).textContent="最高倍音: —";return}let c30=0,c40=0,c50=0,highest40=0;for(let h=1;h<=maxHarmonicNumber(sp);h++){const info=harmonicInfo(sp,h);if(!info)continue;if(info.db>=-30)c30++;if(info.db>=-40){c40++;highest40=h}if(info.db>=-50)c50++}$("count"+label).textContent=`${c30} / ${c40} / ${c50}`;$("highest"+label).textContent="−40 dB以上の最高倍音: H"+(highest40||"—")}
 function updateHarmonics(){summarize("A");summarize("B");summarize("C");const maxH=Math.max(10,...["A","B","C"].map(k=>maxHarmonicNumber(points[k].spectrum))),displayMax=showAllHarmonics?maxH:Math.min(10,maxH);let rows="";for(let h=1;h<=displayMax;h++){let cells="";for(const label of ["A","B","C"]){const info=harmonicInfo(points[label].spectrum,h);cells+=`<td>${info?info.hz.toFixed(0)+" Hz / "+info.db.toFixed(1)+" dB":"—"}</td>`}rows+=`<tr><td>H${h}</td>${cells}</tr>`}$("harmonicsBody").innerHTML=rows||'<tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr>';$("toggleHarmonics").textContent=showAllHarmonics?"H1〜H10だけ表示":"H11以降も表示"}
 $("toggleHarmonics").onclick=()=>{showAllHarmonics=!showAllHarmonics;updateHarmonics()};
