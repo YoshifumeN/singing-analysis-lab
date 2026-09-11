@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.10.2</title>
+<title>歌唱音響分析器 v0.10.3</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -102,11 +102,31 @@ progress{width:100%;height:14px;margin-top:10px}
   width:100%;
 }
 
+
+.track-label-input{
+  width:140px;
+  max-width:55%;
+  font:inherit;
+  border:1px solid #d0d5dd;
+  border-radius:7px;
+  padding:5px 7px;
+}
+.track-title-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.inline-track-label{
+  font-weight:600;
+  color:#475467;
+}
+
 </style>
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.10.2</h1>
+<h1>歌唱音響分析器 v0.10.3</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 
@@ -136,7 +156,10 @@ progress{width:100%;height:14px;margin-top:10px}
 <div class="track-grid">
 
 <div class="track-card">
-  <strong>録音 1</strong>
+  <div class="track-title-row">
+    <strong>録音 1</strong>
+    <input id="trackLabel1" class="track-label-input" type="text" placeholder="ラベルを入力" aria-label="録音1のラベル">
+  </div>
   <div class="controls" style="margin-top:8px">
     <input id="fileInput1" type="file" accept="audio/*">
   </div>
@@ -151,7 +174,10 @@ progress{width:100%;height:14px;margin-top:10px}
   </div>
 </div>
 <div class="track-card">
-  <strong>録音 2</strong>
+  <div class="track-title-row">
+    <strong>録音 2</strong>
+    <input id="trackLabel2" class="track-label-input" type="text" placeholder="ラベルを入力" aria-label="録音2のラベル">
+  </div>
   <div class="controls" style="margin-top:8px">
     <input id="fileInput2" type="file" accept="audio/*">
   </div>
@@ -166,7 +192,10 @@ progress{width:100%;height:14px;margin-top:10px}
   </div>
 </div>
 <div class="track-card">
-  <strong>録音 3</strong>
+  <div class="track-title-row">
+    <strong>録音 3</strong>
+    <input id="trackLabel3" class="track-label-input" type="text" placeholder="ラベルを入力" aria-label="録音3のラベル">
+  </div>
   <div class="controls" style="margin-top:8px">
     <input id="fileInput3" type="file" accept="audio/*">
   </div>
@@ -231,7 +260,7 @@ progress{width:100%;height:14px;margin-top:10px}
 
 <div class="wave-wrap">
   <div class="wave-head">
-    <strong>録音 1</strong>
+    <strong>録音 1</strong><span id="waveLabel1" class="inline-track-label"></span>
     <div class="controls">
       <button id="playBtn1" disabled>再生</button>
       <button id="stopPlayBtn1" disabled>停止</button>
@@ -248,7 +277,7 @@ progress{width:100%;height:14px;margin-top:10px}
 </div>
 <div class="wave-wrap">
   <div class="wave-head">
-    <strong>録音 2</strong>
+    <strong>録音 2</strong><span id="waveLabel2" class="inline-track-label"></span>
     <div class="controls">
       <button id="playBtn2" disabled>再生</button>
       <button id="stopPlayBtn2" disabled>停止</button>
@@ -265,7 +294,7 @@ progress{width:100%;height:14px;margin-top:10px}
 </div>
 <div class="wave-wrap">
   <div class="wave-head">
-    <strong>録音 3</strong>
+    <strong>録音 3</strong><span id="waveLabel3" class="inline-track-label"></span>
     <div class="controls">
       <button id="playBtn3" disabled>再生</button>
       <button id="stopPlayBtn3" disabled>停止</button>
@@ -294,7 +323,7 @@ progress{width:100%;height:14px;margin-top:10px}
 
 <div style="margin-bottom:16px">
   <div class="wave-head">
-    <strong>録音 1</strong>
+    <strong>録音 1</strong><span id="f0Label1" class="inline-track-label"></span>
     <span id="f0Range1" class="status">表示範囲: —</span>
   </div>
   <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝音の高さ（F0：Hz / 音名）</div>
@@ -302,7 +331,7 @@ progress{width:100%;height:14px;margin-top:10px}
 </div>
 <div style="margin-bottom:16px">
   <div class="wave-head">
-    <strong>録音 2</strong>
+    <strong>録音 2</strong><span id="f0Label2" class="inline-track-label"></span>
     <span id="f0Range2" class="status">表示範囲: —</span>
   </div>
   <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝音の高さ（F0：Hz / 音名）</div>
@@ -310,7 +339,7 @@ progress{width:100%;height:14px;margin-top:10px}
 </div>
 <div style="margin-bottom:16px">
   <div class="wave-head">
-    <strong>録音 3</strong>
+    <strong>録音 3</strong><span id="f0Label3" class="inline-track-label"></span>
     <span id="f0Range3" class="status">表示範囲: —</span>
   </div>
   <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝音の高さ（F0：Hz / 音名）</div>
@@ -344,9 +373,9 @@ progress{width:100%;height:14px;margin-top:10px}
 <section class="panel">
 <div class="section-title">5. 倍音構造（4のスペクトルから倍音だけを抽出）</div>
 <div class="meta">
-  <div class="metric"><div class="label">A: −30 / −40 / −50 dB以上</div><div id="countA" class="value">—</div><div id="highestA" class="hint">最高倍音: —</div><div id="tiltA" class="hint">スペクトル傾斜: —</div></div>
-  <div class="metric"><div class="label">B: −30 / −40 / −50 dB以上</div><div id="countB" class="value">—</div><div id="highestB" class="hint">最高倍音: —</div><div id="tiltB" class="hint">スペクトル傾斜: —</div></div>
-  <div class="metric"><div class="label">C: −30 / −40 / −50 dB以上</div><div id="countC" class="value">—</div><div id="highestC" class="hint">最高倍音: —</div><div id="tiltC" class="hint">スペクトル傾斜: —</div></div>
+  <div class="metric"><div class="label">A: −30 / −40 / −50 dB以上</div><div id="countA" class="value">—</div><div id="harmonicMetaA" class="hint">地点情報: —</div><div id="highestA" class="hint">最高倍音: —</div><div id="tiltA" class="hint">スペクトル傾斜: —</div></div>
+  <div class="metric"><div class="label">B: −30 / −40 / −50 dB以上</div><div id="countB" class="value">—</div><div id="harmonicMetaB" class="hint">地点情報: —</div><div id="highestB" class="hint">最高倍音: —</div><div id="tiltB" class="hint">スペクトル傾斜: —</div></div>
+  <div class="metric"><div class="label">C: −30 / −40 / −50 dB以上</div><div id="countC" class="value">—</div><div id="harmonicMetaC" class="hint">地点情報: —</div><div id="highestC" class="hint">最高倍音: —</div><div id="tiltC" class="hint">スペクトル傾斜: —</div></div>
 </div>
 <div class="controls" style="margin-top:12px">
   <button id="toggleHarmonics">H11以降も表示</button>
@@ -359,7 +388,7 @@ progress{width:100%;height:14px;margin-top:10px}
   </select>
 </div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.10.2では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.10.3では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
@@ -391,6 +420,28 @@ let points={
   C:{track:null,time:null,spectrum:null}
 };
 
+function getTrackLabel(n){
+  const el=$("trackLabel"+n);
+  return el ? el.value.trim() : "";
+}
+function trackDisplayName(n){
+  const label=getTrackLabel(n);
+  return label ? `録音${n}「${label}」` : `録音${n}`;
+}
+function refreshTrackLabels(){
+  for(const n of TRACK_IDS){
+    const label=getTrackLabel(n);
+    const text=label ? `｜${label}` : "";
+    const w=$("waveLabel"+n);
+    const f=$("f0Label"+n);
+    if(w)w.textContent=text;
+    if(f)f.textContent=text;
+  }
+  updateSpectrumLegend();
+  updateHarmonics();
+}
+
+
 function pointStyle(k){
   return {A:"#d92d20",B:"#039855",C:"#7a5af8"}[k];
 }
@@ -402,7 +453,8 @@ function setSelectionMode(mode){
   $("selectClip1").classList.toggle("primary",mode==="CLIP1");
   $("selectClip2").classList.toggle("primary",mode==="CLIP2");
 }
-$("selectA").onclick=()=>setSelectionMode("A");
+$("selectA").onclick=()=>refreshTrackLabels();
+setSelectionMode("A");
 $("selectB").onclick=()=>setSelectionMode("B");
 $("selectC").onclick=()=>setSelectionMode("C");
 $("selectPlayhead").onclick=()=>setSelectionMode("PLAY");
@@ -625,6 +677,11 @@ function setupTrackUI(n){
   });
 }
 TRACK_IDS.forEach(setupTrackUI);
+TRACK_IDS.forEach(n=>{
+  const input=$("trackLabel"+n);
+  if(input) input.addEventListener("input",refreshTrackLabels);
+});
+
 
 function playbackTime(n){
   const tr=tracks[n];
@@ -1131,7 +1188,7 @@ function setPoint(label,n,t){
 
   $("cursorTime"+label).textContent=p.time.toFixed(3)+" s";
   $("cursorF0"+label).textContent="F0: "+(p.spectrum.f0?p.spectrum.f0.toFixed(1)+" Hz":"—");
-  $("cursorTrack"+label).textContent="録音: "+n;
+  $("cursorTrack"+label).textContent="録音: "+trackDisplayName(n);
 
   TRACK_IDS.forEach(drawWave);
   TRACK_IDS.forEach(drawClipPreview);
@@ -1179,7 +1236,7 @@ function updateSpectrumLegend(){
   for(const label of ["A","B","C"]){
     const p=points[label];
     if(p.track==null||p.time==null)continue;
-    parts.push(`<span class="legend-item"><span class="swatch swatch-${label.toLowerCase()}"></span><strong>${label}</strong>: 録音${p.track} / ${p.time.toFixed(3)} s</span>`);
+    parts.push(`<span class="legend-item"><span class="swatch swatch-${label.toLowerCase()}"></span><strong>${label}</strong>: ${trackDisplayName(p.track)} / ${p.time.toFixed(3)} s${p.spectrum?.f0?` / F0 ${p.spectrum.f0.toFixed(1)} Hz`:""}</span>`);
   }
   el.innerHTML=parts.length?parts.join(""):'<span class="status">A/B/Cはまだ指定されていません。</span>';
 }
@@ -1301,6 +1358,7 @@ function summarize(label){
     $("count"+label).textContent="—";
     $("highest"+label).textContent="最高倍音: —";
     $("tilt"+label).textContent="スペクトル傾斜: —";
+    $("harmonicMeta"+label).textContent="地点情報: —";
     return;
   }
 
@@ -1317,6 +1375,8 @@ function summarize(label){
   $("highest"+label).textContent="−40 dB以上の最高倍音: "+(highest40?`H${highest40}`:"—");
   const tilt=spectralTiltDbPerOctave(sp);
   $("tilt"+label).textContent="スペクトル傾斜: "+(tilt==null?"—":`${tilt.toFixed(1)} dB/oct`);
+  const p=points[label];
+  $("harmonicMeta"+label).textContent=`${trackDisplayName(p.track)} / ${p.time.toFixed(3)} s / F0 ${sp.f0.toFixed(1)} Hz`;
 }
 
 function updateHarmonics(){
@@ -1404,7 +1464,7 @@ function saveSpectrumPng(){
     ctx.fillStyle="#344054";
     ctx.font="20px system-ui";
     const f0=p.spectrum.f0?` / F0 ${p.spectrum.f0.toFixed(1)} Hz`:"";
-    const txt=`${label}: 録音${p.track} / ${p.time.toFixed(3)} s${f0}`;
+    const txt=`${label}: ${trackDisplayName(p.track)} / ${p.time.toFixed(3)} s${f0}`;
     ctx.fillText(txt,lx+42,ly+7);
     lx+=ctx.measureText(txt).width+100;
   }
@@ -1426,7 +1486,7 @@ function saveSpectrumPng(){
 
   ctx.fillStyle="#667085";
   ctx.font="18px system-ui";
-  ctx.fillText("歌唱音響分析器 v0.10.2",80,860);
+  ctx.fillText("歌唱音響分析器 v0.10.3",80,860);
 
   out.toBlob(blob=>{
     if(!blob)return;
