@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.3</title>
+<title>歌唱音響分析器 v0.4</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -31,43 +31,51 @@ th:first-child,td:first-child{text-align:left}
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.3</h1>
+<h1>歌唱音響分析器 v0.4</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 <section class="panel">
-<div class="section-title">1. 音声を入れる</div>
-<div class="controls">
-<input id="fileInput" type="file" accept="audio/*">
-<button id="recordBtn">録音開始</button>
-<button id="stopBtn" disabled>録音停止</button>
-<button id="playBtn" disabled>再生</button>
-<button id="stopPlayBtn" disabled>停止</button>
+<div class="section-title">1. 音声を入れる（2録音を独立に保持）</div>
+<div class="row">
+  <div>
+    <strong>録音 1</strong>
+    <div class="controls" style="margin-top:8px">
+      <input id="fileInput1" type="file" accept="audio/*">
+      <button id="recordBtn1">録音開始</button><button id="stopBtn1" disabled>録音停止</button><button id="playBtn1" disabled>再生</button><button id="stopPlayBtn1" disabled>停止</button>
+    </div>
+    <div id="status1" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
+    <div class="meta"><div class="metric"><div class="label">長さ</div><div id="duration1" class="value">—</div></div><div class="metric"><div class="label">サンプルレート</div><div id="sampleRate1" class="value">—</div></div></div>
+  </div>
+  <div>
+    <strong>録音 2</strong>
+    <div class="controls" style="margin-top:8px">
+      <input id="fileInput2" type="file" accept="audio/*">
+      <button id="recordBtn2">録音開始</button><button id="stopBtn2" disabled>録音停止</button><button id="playBtn2" disabled>再生</button><button id="stopPlayBtn2" disabled>停止</button>
+    </div>
+    <div id="status2" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
+    <div class="meta"><div class="metric"><div class="label">長さ</div><div id="duration2" class="value">—</div></div><div class="metric"><div class="label">サンプルレート</div><div id="sampleRate2" class="value">—</div></div></div>
+  </div>
 </div>
-<div id="status" class="status" style="margin-top:10px">音声ファイルを選ぶか、マイクで録音してください。</div>
-<div class="meta">
-<div class="metric"><div class="label">長さ</div><div id="duration" class="value">—</div></div>
-<div class="metric"><div class="label">サンプルレート</div><div id="sampleRate" class="value">—</div></div>
-<div class="metric"><div class="label">地点 A</div><div id="cursorTimeA" class="value">—</div><div id="cursorF0A" class="hint">F0: —</div></div>
-<div class="metric"><div class="label">地点 B</div><div id="cursorTimeB" class="value">—</div><div id="cursorF0B" class="hint">F0: —</div></div>
-<div class="metric"><div class="label">地点 C</div><div id="cursorTimeC" class="value">—</div><div id="cursorF0C" class="hint">F0: —</div></div>
+<div class="meta" style="margin-top:14px">
+<div class="metric"><div class="label">地点 A</div><div id="cursorTimeA" class="value">—</div><div id="cursorF0A" class="hint">F0: —</div><div id="cursorTrackA" class="hint">録音: —</div></div>
+<div class="metric"><div class="label">地点 B</div><div id="cursorTimeB" class="value">—</div><div id="cursorF0B" class="hint">F0: —</div><div id="cursorTrackB" class="hint">録音: —</div></div>
+<div class="metric"><div class="label">地点 C</div><div id="cursorTimeC" class="value">—</div><div id="cursorF0C" class="hint">F0: —</div><div id="cursorTrackC" class="hint">録音: —</div></div>
 </div>
 </section>
 
 <section class="panel">
 <div class="section-title">2. 波形＋音量包絡</div>
-<div class="controls" style="margin-bottom:10px">
-<button id="selectA" class="primary">地点Aを選択</button>
-<button id="selectB">地点Bを選択</button>
-<button id="selectC">地点Cを選択</button>
-</div>
-<canvas id="waveCanvas" width="1000" height="220"></canvas>
-<p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>相対振幅／相対音量。灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡。A/B/Cのいずれかを選んでからグラフをクリックすると、その地点を比較対象として登録します。</p>
+<div class="controls" style="margin-bottom:10px"><button id="selectA" class="primary">地点Aを選択</button><button id="selectB">地点Bを選択</button><button id="selectC">地点Cを選択</button></div>
+<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div><canvas id="waveCanvas1" width="1000" height="220"></canvas></div>
+<div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div><canvas id="waveCanvas2" width="1000" height="220"></canvas></div>
+<p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>相対振幅／相対音量。灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡。A/B/Cのいずれかを選んでから、録音1または録音2の波形をクリックすると、その地点を比較対象として登録します。</p>
 </section>
 
 <section class="panel small">
 <div class="section-title">3. F0（基本周波数）</div>
-<canvas id="f0Canvas" width="1000" height="180"></canvas>
-<p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>F0（Hz、対数表示）。青＝推定された基本周波数（おおむね声の音高）、赤＝現在の解析地点。簡易自己相関法で推定しています。</p>
+<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div><canvas id="f0Canvas1" width="1000" height="180"></canvas></div>
+<div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div><canvas id="f0Canvas2" width="1000" height="180"></canvas></div>
+<p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>F0（Hz、対数表示）。青＝推定された基本周波数。A/B/Cの縦線は、それぞれ選択した録音のグラフに表示されます。簡易自己相関法で推定しています。</p>
 </section>
 
 <section class="panel">
@@ -78,228 +86,55 @@ th:first-child,td:first-child{text-align:left}
 
 <section class="panel">
 <div class="section-title">5. 倍音構造（4のスペクトルから倍音だけを抽出）</div>
-<div class="row">
-<div>
-<table>
-<thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead>
-<tbody id="harmonicsBody">
-<tr><td colspan="4" style="text-align:center;color:#667085">音声を読み込んでA/B/Cの地点を指定してください。</td></tr>
-</tbody>
-</table>
+<div class="meta">
+  <div class="metric"><div class="label">A: −30 / −40 / −50 dB以上</div><div id="countA" class="value">—</div><div id="highestA" class="hint">最高倍音: —</div></div>
+  <div class="metric"><div class="label">B: −30 / −40 / −50 dB以上</div><div id="countB" class="value">—</div><div id="highestB" class="hint">最高倍音: —</div></div>
+  <div class="metric"><div class="label">C: −30 / −40 / −50 dB以上</div><div id="countC" class="value">—</div><div id="highestC" class="hint">最高倍音: —</div></div>
 </div>
-<div class="hint">
-<strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。A/B/Cそれぞれについて、その地点の最大ピークを0 dBとして相対強度を表示します。<br><br><strong>今見ること</strong><br>
-・遠吠え声といきみ声で低次倍音がどう違うか<br>
-・発声開始直後と定常部で倍音構造がどう変わるか<br>
-・「豊かに鳴る」と感じた声で、どの倍音が強くなるか<br><br>
-v0.3では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。
-</div>
-</div>
+<div class="controls" style="margin-top:12px"><button id="toggleHarmonics">H11以降も表示</button></div>
+<div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。5 kHzまでの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.4では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
 <script>
-let audioCtx=null,audioBuffer=null,mono=null,sourceNode=null,mediaRecorder=null,recordChunks=[],f0Track=[];
-let selectedPoint="A";
-let cursors={A:null,B:null,C:null};
-let spectra={A:null,B:null,C:null};
 const $=id=>document.getElementById(id);
-function getAudioContext(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
-
-function setSelectedPoint(p){
- selectedPoint=p;
- ["A","B","C"].forEach(k=>{
-   const b=$("select"+k);
-   if(b) b.classList.toggle("primary",k===p);
- });
+let audioCtx=null;function getAudioContext(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+const tracks={1:{buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[]},2:{buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[]}};
+let selectedPoint="A",showAllHarmonics=false;
+let points={A:{track:null,time:null,spectrum:null},B:{track:null,time:null,spectrum:null},C:{track:null,time:null,spectrum:null}};
+function pointStyle(k){return {A:"#d92d20",B:"#039855",C:"#7a5af8"}[k]}
+function setSelectedPoint(p){selectedPoint=p;["A","B","C"].forEach(k=>$("select"+k).classList.toggle("primary",k===p))}
+$("selectA").onclick=()=>setSelectedPoint("A");$("selectB").onclick=()=>setSelectedPoint("B");$("selectC").onclick=()=>setSelectedPoint("C");
+function setupTrackUI(n){
+ $("fileInput"+n).addEventListener("change",async e=>{const file=e.target.files?.[0];if(!file)return;$("status"+n).textContent="読み込み中…";try{tracks[n].buffer=await getAudioContext().decodeAudioData((await file.arrayBuffer()).slice(0));prepareTrack(n);$("status"+n).textContent="読込完了: "+file.name}catch(err){console.error(err);$("status"+n).textContent="音声を読み込めませんでした。"}});
+ $("recordBtn"+n).onclick=async()=>{try{const stream=await navigator.mediaDevices.getUserMedia({audio:true}),tr=tracks[n];tr.chunks=[];tr.recorder=new MediaRecorder(stream);tr.recorder.ondataavailable=e=>{if(e.data.size)tr.chunks.push(e.data)};tr.recorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());const blob=new Blob(tr.chunks,{type:tr.recorder.mimeType||"audio/webm"});try{tr.buffer=await getAudioContext().decodeAudioData((await blob.arrayBuffer()).slice(0));prepareTrack(n);$("status"+n).textContent="録音を解析しました。"}catch(err){console.error(err);$("status"+n).textContent="録音データを解析できませんでした。"}};tr.recorder.start();$("recordBtn"+n).disabled=true;$("stopBtn"+n).disabled=false;$("status"+n).textContent="録音中…"}catch(err){console.error(err);$("status"+n).textContent="マイクを使用できません。HTTPS上で開くか許可を確認してください。"}};
+ $("stopBtn"+n).onclick=()=>{const tr=tracks[n];if(tr.recorder&&tr.recorder.state!=="inactive")tr.recorder.stop();$("recordBtn"+n).disabled=false;$("stopBtn"+n).disabled=true};
+ $("playBtn"+n).onclick=async()=>{const tr=tracks[n];if(!tr.buffer)return;stopPlayback(n);const ctx=getAudioContext();await ctx.resume();tr.source=ctx.createBufferSource();tr.source.buffer=tr.buffer;tr.source.connect(ctx.destination);tr.source.start();$("playBtn"+n).disabled=true;$("stopPlayBtn"+n).disabled=false;tr.source.onended=()=>{tr.source=null;$("playBtn"+n).disabled=false;$("stopPlayBtn"+n).disabled=true}};
+ $("stopPlayBtn"+n).onclick=()=>stopPlayback(n);
+ $("waveCanvas"+n).addEventListener("click",evt=>{const tr=tracks[n];if(!tr.buffer)return;const c=$("waveCanvas"+n),r=c.getBoundingClientRect(),x=(evt.clientX-r.left)/r.width*c.width,t=x/c.width*tr.buffer.duration;setPoint(selectedPoint,n,t)});
 }
-$("selectA").addEventListener("click",()=>setSelectedPoint("A"));
-$("selectB").addEventListener("click",()=>setSelectedPoint("B"));
-$("selectC").addEventListener("click",()=>setSelectedPoint("C"));
-function stopPlayback(){if(sourceNode){try{sourceNode.stop()}catch(e){} sourceNode.disconnect();sourceNode=null} if(audioBuffer)$("playBtn").disabled=false;$("stopPlayBtn").disabled=true}
-
-$("fileInput").addEventListener("change",async e=>{
- const file=e.target.files?.[0]; if(!file)return; $("status").textContent="読み込み中…";
- try{const arr=await file.arrayBuffer();audioBuffer=await getAudioContext().decodeAudioData(arr.slice(0));prepareBuffer();$("status").textContent="読込完了: "+file.name}
- catch(err){console.error(err);$("status").textContent="音声を読み込めませんでした。WAV / MP3 / M4A などで試してください。"}
-});
-
-$("recordBtn").addEventListener("click",async()=>{
- try{
-  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-  recordChunks=[];mediaRecorder=new MediaRecorder(stream);
-  mediaRecorder.ondataavailable=e=>{if(e.data.size)recordChunks.push(e.data)};
-  mediaRecorder.onstop=async()=>{
-   stream.getTracks().forEach(t=>t.stop());
-   const blob=new Blob(recordChunks,{type:mediaRecorder.mimeType||"audio/webm"});
-   try{audioBuffer=await getAudioContext().decodeAudioData((await blob.arrayBuffer()).slice(0));prepareBuffer();$("status").textContent="録音を解析しました。"}
-   catch(err){console.error(err);$("status").textContent="録音データを解析できませんでした。"}
-  };
-  mediaRecorder.start();$("recordBtn").disabled=true;$("stopBtn").disabled=false;$("status").textContent="録音中…";
- }catch(err){console.error(err);$("status").textContent="マイクを使用できません。GitHub Pages（HTTPS）上で開くか、ブラウザのマイク許可を確認してください。"}
-});
-$("stopBtn").addEventListener("click",()=>{if(mediaRecorder&&mediaRecorder.state!=="inactive")mediaRecorder.stop();$("recordBtn").disabled=false;$("stopBtn").disabled=true});
-$("playBtn").addEventListener("click",async()=>{
- if(!audioBuffer)return;stopPlayback();const ctx=getAudioContext();await ctx.resume();sourceNode=ctx.createBufferSource();sourceNode.buffer=audioBuffer;sourceNode.connect(ctx.destination);sourceNode.start();$("playBtn").disabled=true;$("stopPlayBtn").disabled=false;
- sourceNode.onended=()=>{sourceNode=null;$("playBtn").disabled=false;$("stopPlayBtn").disabled=true};
-});
-$("stopPlayBtn").addEventListener("click",stopPlayback);
-
-function prepareBuffer(){
- const channels=audioBuffer.numberOfChannels,length=audioBuffer.length;mono=new Float32Array(length);
- for(let ch=0;ch<channels;ch++){const d=audioBuffer.getChannelData(ch);for(let i=0;i<length;i++)mono[i]+=d[i]/channels}
- $("duration").textContent=audioBuffer.duration.toFixed(2)+" s";$("sampleRate").textContent=audioBuffer.sampleRate+" Hz";$("playBtn").disabled=false;
- cursors.A=Math.max(.05,audioBuffer.duration*.30);
- cursors.B=Math.max(.05,audioBuffer.duration*.50);
- cursors.C=Math.max(.05,audioBuffer.duration*.70);
- drawWaveAndEnvelope();computeAndDrawF0();
- analyzePoint("A",cursors.A);analyzePoint("B",cursors.B);analyzePoint("C",cursors.C);
- drawSpectrumComparison();updateHarmonicsComparison();
-}
-
+setupTrackUI(1);setupTrackUI(2);
+function stopPlayback(n){const tr=tracks[n];if(tr.source){try{tr.source.stop()}catch(e){}tr.source.disconnect();tr.source=null}if(tr.buffer)$("playBtn"+n).disabled=false;$("stopPlayBtn"+n).disabled=true}
+function prepareTrack(n){const tr=tracks[n],buf=tr.buffer;tr.mono=new Float32Array(buf.length);for(let ch=0;ch<buf.numberOfChannels;ch++){const d=buf.getChannelData(ch);for(let i=0;i<buf.length;i++)tr.mono[i]+=d[i]/buf.numberOfChannels}$("duration"+n).textContent=buf.duration.toFixed(2)+" s";$("sampleRate"+n).textContent=buf.sampleRate+" Hz";$("playBtn"+n).disabled=false;computeF0(n);drawWave(n);drawF0(n)}
 function clearCanvas(c){const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle="#d0d5dd";ctx.strokeRect(.5,.5,c.width-1,c.height-1);return ctx}
 function drawAxes(ctx,w,h){ctx.strokeStyle="#eaecf0";ctx.lineWidth=1;for(let i=1;i<4;i++){const y=h*i/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}}
-function canvasPoint(canvas,evt){const r=canvas.getBoundingClientRect();return{x:(evt.clientX-r.left)/r.width*canvas.width,y:(evt.clientY-r.top)/r.height*canvas.height}}
-$("waveCanvas").addEventListener("click",evt=>{
- if(!audioBuffer)return;
- const t=canvasPoint($("waveCanvas"),evt).x/$("waveCanvas").width*audioBuffer.duration;
- cursors[selectedPoint]=t;
- analyzePoint(selectedPoint,t);
- drawWaveAndEnvelope();drawF0();drawSpectrumComparison();updateHarmonicsComparison();
-});
+function drawWave(n){const tr=tracks[n],c=$("waveCanvas"+n),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);if(!tr.mono||!tr.buffer)return;const mono=tr.mono,buf=tr.buffer,spp=mono.length/w;ctx.strokeStyle="#667085";ctx.lineWidth=1;ctx.beginPath();for(let x=0;x<w;x++){const a=Math.floor(x*spp),b=Math.min(mono.length,Math.floor((x+1)*spp));let min=1,max=-1;for(let i=a;i<b;i++){const v=mono[i];if(v<min)min=v;if(v>max)max=v}ctx.moveTo(x,h/2-min*h*.42);ctx.lineTo(x,h/2-max*h*.42)}ctx.stroke();const sr=buf.sampleRate,win=Math.max(32,Math.floor(sr*.02)),hop=Math.max(16,Math.floor(sr*.01));let env=[],maxR=1e-9;for(let s=0;s<mono.length;s+=hop){let ss=0,cnt=0,end=Math.min(mono.length,s+win);for(let i=s;i<end;i++){ss+=mono[i]*mono[i];cnt++}const rms=Math.sqrt(ss/Math.max(1,cnt));env.push([s/sr,rms]);if(rms>maxR)maxR=rms}ctx.strokeStyle="#2563eb";ctx.lineWidth=2.2;ctx.beginPath();env.forEach(([t,r],i)=>{const x=t/buf.duration*w,y=h-10-r/maxR*(h-20);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();for(const label of ["A","B","C"]){const p=points[label];if(p.track!==n||p.time==null)continue;const x=p.time/buf.duration*w;ctx.strokeStyle=pointStyle(label);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();ctx.fillStyle=pointStyle(label);ctx.font="12px system-ui";ctx.fillText(label,x+3,14)}ctx.fillStyle="#667085";ctx.font="12px system-ui";ctx.fillText("0 s",6,h-6);ctx.fillText(buf.duration.toFixed(2)+" s",w-65,h-6);ctx.save();ctx.translate(13,h/2);ctx.rotate(-Math.PI/2);ctx.fillText("相対振幅 / RMS",0,0);ctx.restore()}
+function autocorrelationF0(data,sr,start,size){const end=Math.min(data.length,start+size),len=end-start;if(len<256)return null;let mean=0;for(let i=start;i<end;i++)mean+=data[i];mean/=len;let rms=0,x=new Float32Array(len);for(let i=0;i<len;i++){x[i]=data[start+i]-mean;rms+=x[i]*x[i]}rms=Math.sqrt(rms/len);if(rms<.008)return null;const minHz=70,maxHz=700,minLag=Math.floor(sr/maxHz),maxLag=Math.min(len-2,Math.floor(sr/minHz));let bestLag=-1,best=-1;for(let lag=minLag;lag<=maxLag;lag++){let num=0,a=0,b=0,m=len-lag;for(let i=0;i<m;i++){const u=x[i],v=x[i+lag];num+=u*v;a+=u*u;b+=v*v}const corr=num/Math.sqrt(a*b+1e-12);if(corr>best){best=corr;bestLag=lag}}if(best<.55||bestLag<0)return null;return sr/bestLag}
+function computeF0(n){const tr=tracks[n],sr=tr.buffer.sampleRate,win=Math.floor(sr*.06),hop=Math.floor(sr*.02);tr.f0=[];for(let s=0;s+win<tr.mono.length;s+=hop)tr.f0.push([s/sr,autocorrelationF0(tr.mono,sr,s,win)])}
+function drawF0(n){const tr=tracks[n],c=$("f0Canvas"+n),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);if(!tr.buffer)return;const minF=70,maxF=700;ctx.strokeStyle="#2563eb";ctx.lineWidth=1.7;let pen=false;ctx.beginPath();for(const [t,f] of tr.f0){if(!f||f<minF||f>maxF){pen=false;continue}const x=t/tr.buffer.duration*w,y=h-10-Math.log(f/minF)/Math.log(maxF/minF)*(h-20);if(!pen){ctx.moveTo(x,y);pen=true}else ctx.lineTo(x,y)}ctx.stroke();for(const label of ["A","B","C"]){const p=points[label];if(p.track!==n||p.time==null)continue;const x=p.time/tr.buffer.duration*w;ctx.strokeStyle=pointStyle(label);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();ctx.fillStyle=pointStyle(label);ctx.font="12px system-ui";ctx.fillText(label,x+3,14)}ctx.fillStyle="#667085";ctx.font="12px system-ui";ctx.fillText("700 Hz",6,14);ctx.fillText("70 Hz",6,h-20);ctx.fillText("0 s",36,h-6);ctx.fillText(tr.buffer.duration.toFixed(2)+" s",w-65,h-6);ctx.save();ctx.translate(13,h/2+20);ctx.rotate(-Math.PI/2);ctx.fillText("F0 (Hz)",0,0);ctx.restore()}
+function nearestF0(n,t){let best=null,dist=Infinity;for(const [tt,f] of tracks[n].f0){if(!f)continue;const d=Math.abs(tt-t);if(d<dist){dist=d;best=f}}return best}
+function hann(i,N){return .5*(1-Math.cos(2*Math.PI*i/(N-1)))}
+function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}for(let len=2;len<=n;len<<=1){const ang=-2*Math.PI/len,wc=Math.cos(ang),ws=Math.sin(ang);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let j=0;j<len/2;j++){const ur=re[i+j],ui=im[i+j],k=i+j+len/2,vr=re[k]*cr-im[k]*ci,vi=re[k]*ci+im[k]*cr;re[i+j]=ur+vr;im[i+j]=ui+vi;re[k]=ur-vr;im[k]=ui-vi;const nr=cr*wc-ci*ws;ci=cr*ws+ci*wc;cr=nr}}}}
+function buildSpectrum(n,t){const tr=tracks[n],sr=tr.buffer.sampleRate;let N=8192;while(N>2048&&N>tr.mono.length)N>>=1;const center=Math.floor(t*sr),start=Math.max(0,Math.min(Math.max(0,tr.mono.length-N),center-Math.floor(N/2))),re=new Float64Array(N),im=new Float64Array(N);let mean=0;for(let i=0;i<N;i++)mean+=tr.mono[start+i]||0;mean/=N;for(let i=0;i<N;i++)re[i]=((tr.mono[start+i]||0)-mean)*hann(i,N);fft(re,im);const mags=new Float64Array(N/2);let maxMag=1e-12;for(let k=1;k<N/2;k++){const m=Math.hypot(re[k],im[k]);mags[k]=m;if(m>maxMag)maxMag=m}return {mags,sr,N,maxMag,f0:nearestF0(n,t)}}
+function setPoint(label,n,t){const p=points[label];p.track=n;p.time=Math.max(0,Math.min(tracks[n].buffer.duration,t));p.spectrum=buildSpectrum(n,p.time);$("cursorTime"+label).textContent=p.time.toFixed(3)+" s";$("cursorF0"+label).textContent="F0: "+(p.spectrum.f0?p.spectrum.f0.toFixed(1)+" Hz":"—");$("cursorTrack"+label).textContent="録音: "+n;drawWave(1);drawWave(2);drawF0(1);drawF0(2);drawSpectrumComparison();updateHarmonics()}
+function drawSpectrumComparison(){const c=$("spectrumCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);const maxHz=5000;for(const label of ["A","B","C"]){const sp=points[label].spectrum;if(!sp)continue;const effectiveMax=Math.min(maxHz,sp.sr/2),maxK=Math.min(sp.mags.length-1,Math.floor(effectiveMax*sp.N/sp.sr));ctx.strokeStyle=pointStyle(label);ctx.lineWidth=1.4;ctx.beginPath();for(let k=1;k<=maxK;k++){const hz=k*sp.sr/sp.N,x=hz/maxHz*w;let db=20*Math.log10((sp.mags[k]+1e-12)/sp.maxMag);db=Math.max(-70,Math.min(0,db));const y=10+(-db/70)*(h-20);if(k===1)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.stroke()}ctx.fillStyle="#667085";ctx.font="12px system-ui";ctx.fillText("0 Hz",32,h-6);ctx.fillText("5000 Hz",w-65,h-6);ctx.fillText("0 dB",6,14);ctx.fillText("-70 dB",6,h-20);ctx.fillText("周波数 (Hz)",w/2-35,h-6);ctx.save();ctx.translate(13,h/2+25);ctx.rotate(-Math.PI/2);ctx.fillText("相対強度 (dB)",0,0);ctx.restore();let lx=w-125,ly=16;for(const label of ["A","B","C"]){ctx.strokeStyle=pointStyle(label);ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+18,ly);ctx.stroke();ctx.fillStyle="#667085";ctx.fillText(label,lx+24,ly+4);ly+=18}}
+function harmonicInfo(sp,h){if(!sp||!sp.f0)return null;const target=sp.f0*h;if(target>5000||target>=sp.sr/2)return null;const k0=Math.round(target*sp.N/sp.sr),radius=Math.max(2,Math.round(25*sp.N/sp.sr));let bestK=k0,bestM=0;for(let k=Math.max(1,k0-radius);k<=Math.min(sp.mags.length-1,k0+radius);k++){if(sp.mags[k]>bestM){bestM=sp.mags[k];bestK=k}}return {hz:bestK*sp.sr/sp.N,db:20*Math.log10((bestM+1e-12)/sp.maxMag)}}
+function maxHarmonicNumber(sp){if(!sp||!sp.f0)return 0;return Math.floor(Math.min(5000,sp.sr/2)/sp.f0)}
+function summarize(label){const sp=points[label].spectrum;if(!sp||!sp.f0){$("count"+label).textContent="—";$("highest"+label).textContent="最高倍音: —";return}let c30=0,c40=0,c50=0,highest40=0;for(let h=1;h<=maxHarmonicNumber(sp);h++){const info=harmonicInfo(sp,h);if(!info)continue;if(info.db>=-30)c30++;if(info.db>=-40){c40++;highest40=h}if(info.db>=-50)c50++}$("count"+label).textContent=`${c30} / ${c40} / ${c50}`;$("highest"+label).textContent="−40 dB以上の最高倍音: H"+(highest40||"—")}
+function updateHarmonics(){summarize("A");summarize("B");summarize("C");const maxH=Math.max(10,...["A","B","C"].map(k=>maxHarmonicNumber(points[k].spectrum))),displayMax=showAllHarmonics?maxH:Math.min(10,maxH);let rows="";for(let h=1;h<=displayMax;h++){let cells="";for(const label of ["A","B","C"]){const info=harmonicInfo(points[label].spectrum,h);cells+=`<td>${info?info.hz.toFixed(0)+" Hz / "+info.db.toFixed(1)+" dB":"—"}</td>`}rows+=`<tr><td>H${h}</td>${cells}</tr>`}$("harmonicsBody").innerHTML=rows||'<tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr>';$("toggleHarmonics").textContent=showAllHarmonics?"H1〜H10だけ表示":"H11以降も表示"}
+$("toggleHarmonics").onclick=()=>{showAllHarmonics=!showAllHarmonics;updateHarmonics()};
 
-function drawWaveAndEnvelope(){
- const c=$("waveCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);if(!mono)return;
- const spp=mono.length/w;ctx.strokeStyle="#667085";ctx.lineWidth=1;ctx.beginPath();
- for(let x=0;x<w;x++){const a=Math.floor(x*spp),b=Math.min(mono.length,Math.floor((x+1)*spp));let min=1,max=-1;for(let i=a;i<b;i++){const v=mono[i];if(v<min)min=v;if(v>max)max=v}ctx.moveTo(x,h/2-min*h*.42);ctx.lineTo(x,h/2-max*h*.42)}
- ctx.stroke();
- const sr=audioBuffer.sampleRate,win=Math.max(32,Math.floor(sr*.02)),hop=Math.max(16,Math.floor(sr*.01));let env=[],maxR=1e-9;
- for(let s=0;s<mono.length;s+=hop){let ss=0,n=0,end=Math.min(mono.length,s+win);for(let i=s;i<end;i++){ss+=mono[i]*mono[i];n++}let r=Math.sqrt(ss/Math.max(1,n));env.push([s/sr,r]);if(r>maxR)maxR=r}
- ctx.strokeStyle="#2563eb";ctx.lineWidth=2.2;ctx.beginPath();env.forEach(([t,r],i)=>{let x=t/audioBuffer.duration*w,y=h-10-r/maxR*(h-20);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
- const pointStyles={A:"#d92d20",B:"#039855",C:"#7a5af8"};
- for(const k of ["A","B","C"]){
-   if(cursors[k]==null) continue;
-   const cx=cursors[k]/audioBuffer.duration*w;
-   ctx.strokeStyle=pointStyles[k];ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,h);ctx.stroke();
-   ctx.fillStyle=pointStyles[k];ctx.font="12px system-ui";ctx.fillText(k,cx+3,14);
- }
- ctx.fillStyle="#667085";ctx.font="12px system-ui";
- ctx.fillText("0 s",6,h-6);
- ctx.fillText(audioBuffer.duration.toFixed(2)+" s",w-65,h-6);
- ctx.save();ctx.translate(13,h/2);ctx.rotate(-Math.PI/2);ctx.fillText("相対振幅 / RMS",0,0);ctx.restore();
-}
-
-function autocorrelationF0(data,sr,start,size){
- const end=Math.min(data.length,start+size),n=end-start;if(n<256)return null;
- let mean=0;for(let i=start;i<end;i++)mean+=data[i];mean/=n;
- let rms=0,x=new Float32Array(n);for(let i=0;i<n;i++){x[i]=data[start+i]-mean;rms+=x[i]*x[i]}rms=Math.sqrt(rms/n);if(rms<.008)return null;
- const minHz=70,maxHz=700,minLag=Math.floor(sr/maxHz),maxLag=Math.min(n-2,Math.floor(sr/minHz));let bestLag=-1,best=-1;
- for(let lag=minLag;lag<=maxLag;lag++){let num=0,a=0,b=0,m=n-lag;for(let i=0;i<m;i++){let u=x[i],v=x[i+lag];num+=u*v;a+=u*u;b+=v*v}let corr=num/Math.sqrt(a*b+1e-12);if(corr>best){best=corr;bestLag=lag}}
- if(best<.55||bestLag<0)return null;return sr/bestLag;
-}
-function computeAndDrawF0(){const sr=audioBuffer.sampleRate,win=Math.floor(sr*.06),hop=Math.floor(sr*.02);f0Track=[];for(let s=0;s+win<mono.length;s+=hop)f0Track.push([s/sr,autocorrelationF0(mono,sr,s,win)]);drawF0()}
-function drawF0(){
- const c=$("f0Canvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);if(!audioBuffer)return;const minF=70,maxF=700;ctx.strokeStyle="#2563eb";ctx.lineWidth=1.7;let pen=false;ctx.beginPath();
- for(const [t,f] of f0Track){if(!f||f<minF||f>maxF){pen=false;continue}let x=t/audioBuffer.duration*w,y=h-10-Math.log(f/minF)/Math.log(maxF/minF)*(h-20);if(!pen){ctx.moveTo(x,y);pen=true}else ctx.lineTo(x,y)}ctx.stroke();
- const pointStyles={A:"#d92d20",B:"#039855",C:"#7a5af8"};
- for(const k of ["A","B","C"]){
-   if(cursors[k]==null) continue;
-   const cx=cursors[k]/audioBuffer.duration*w;
-   ctx.strokeStyle=pointStyles[k];ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,h);ctx.stroke();
-   ctx.fillStyle=pointStyles[k];ctx.font="12px system-ui";ctx.fillText(k,cx+3,14);
- }
- ctx.fillStyle="#667085";ctx.font="12px system-ui";ctx.fillText("700 Hz",6,14);ctx.fillText("70 Hz",6,h-6)
-}
-function nearestF0(t){let best=null,dist=Infinity;for(const [tt,f] of f0Track){if(!f)continue;let d=Math.abs(tt-t);if(d<dist){dist=d;best=f}}return best}
-function hann(n,N){return .5*(1-Math.cos(2*Math.PI*n/(N-1)))}
-function fft(re,im){
- const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}
- for(let len=2;len<=n;len<<=1){const ang=-2*Math.PI/len,wc=Math.cos(ang),ws=Math.sin(ang);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let j=0;j<len/2;j++){let ur=re[i+j],ui=im[i+j],k=i+j+len/2,vr=re[k]*cr-im[k]*ci,vi=re[k]*ci+im[k]*cr;re[i+j]=ur+vr;im[i+j]=ui+vi;re[k]=ur-vr;im[k]=ui-vi;let nr=cr*wc-ci*ws;ci=cr*ws+ci*wc;cr=nr}}}
-}
-
-function analyzePoint(label,t){
- if(!audioBuffer||!mono)return;
- t=Math.max(0,Math.min(audioBuffer.duration,t));
- cursors[label]=t;
- const f0=nearestF0(t);
- $("cursorTime"+label).textContent=t.toFixed(3)+" s";
- $("cursorF0"+label).textContent="F0: "+(f0?f0.toFixed(1)+" Hz":"—");
-
- const sr=audioBuffer.sampleRate;
- let N=8192;while(N>2048&&N>mono.length)N>>=1;
- const center=Math.floor(t*sr);
- let start=Math.max(0,Math.min(Math.max(0,mono.length-N),center-Math.floor(N/2)));
- const re=new Float64Array(N),im=new Float64Array(N);
- let mean=0;for(let i=0;i<N;i++)mean+=mono[start+i]||0;mean/=N;
- for(let i=0;i<N;i++)re[i]=((mono[start+i]||0)-mean)*hann(i,N);
- fft(re,im);
- const mags=new Float64Array(N/2);
- let maxMag=1e-12;
- for(let k=1;k<N/2;k++){const m=Math.hypot(re[k],im[k]);mags[k]=m;if(m>maxMag)maxMag=m}
- spectra[label]={mags,sr,N,maxMag,f0};
-}
-
-function drawSpectrumComparison(){
- const c=$("spectrumCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);
- if(!audioBuffer)return;
- const pointStyles={A:"#d92d20",B:"#039855",C:"#7a5af8"};
- const maxHz=Math.min(5000,audioBuffer.sampleRate/2);
-
- for(const label of ["A","B","C"]){
-   const sp=spectra[label]; if(!sp)continue;
-   const {mags,sr,N,maxMag}=sp;
-   const maxK=Math.min(mags.length-1,Math.floor(maxHz*N/sr));
-   ctx.strokeStyle=pointStyles[label];ctx.lineWidth=1.4;ctx.beginPath();
-   for(let k=1;k<=maxK;k++){
-     const hz=k*sr/N,x=hz/maxHz*w;
-     let db=20*Math.log10((mags[k]+1e-12)/maxMag);db=Math.max(-70,Math.min(0,db));
-     const y=10+(-db/70)*(h-20);
-     if(k===1)ctx.moveTo(x,y);else ctx.lineTo(x,y);
-   }
-   ctx.stroke();
- }
-
- ctx.fillStyle="#667085";ctx.font="12px system-ui";
- ctx.fillText("0 Hz",32,h-6);ctx.fillText(Math.round(maxHz)+" Hz",w-65,h-6);
- ctx.fillText("0 dB",6,14);ctx.fillText("-70 dB",6,h-20);
- ctx.fillText("周波数 (Hz)",w/2-35,h-6);
- ctx.save();ctx.translate(13,h/2+25);ctx.rotate(-Math.PI/2);ctx.fillText("相対強度 (dB)",0,0);ctx.restore();
-
- let lx=w-125,ly=16;
- for(const label of ["A","B","C"]){
-   ctx.strokeStyle=pointStyles[label];ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+18,ly);ctx.stroke();
-   ctx.fillStyle="#667085";ctx.fillText(label,lx+24,ly+4);ly+=18;
- }
-}
-
-function harmonicDb(sp,h){
- if(!sp||!sp.f0)return null;
- const {mags,sr,N,maxMag,f0}=sp;
- const target=f0*h;if(target>=sr/2)return null;
- const k0=Math.round(target*N/sr),radius=Math.max(2,Math.round(25*N/sr));
- let bestM=0;
- for(let k=Math.max(1,k0-radius);k<=Math.min(mags.length-1,k0+radius);k++){
-   if(mags[k]>bestM)bestM=mags[k];
- }
- return 20*Math.log10((bestM+1e-12)/maxMag);
-}
-
-function updateHarmonicsComparison(){
- const body=$("harmonicsBody");
- if(!spectra.A&&!spectra.B&&!spectra.C){
-   body.innerHTML='<tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr>';return;
- }
- let rows="";
- for(let h=1;h<=10;h++){
-   let cells="";
-   for(const label of ["A","B","C"]){
-     const db=harmonicDb(spectra[label],h);
-     cells+=`<td>${db==null?"—":db.toFixed(1)+" dB"}</td>`;
-   }
-   rows+=`<tr><td>H${h}</td>${cells}</tr>`;
- }
- body.innerHTML=rows;
-}
 </script>
 </body>
 </html>
