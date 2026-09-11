@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.6.6</title>
+<title>歌唱音響分析器 v0.6.7</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -37,7 +37,7 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.6.6</h1>
+<h1>歌唱音響分析器 v0.6.7</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 <section class="panel">
@@ -127,9 +127,18 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
   <div class="metric"><div class="label">B: −30 / −40 / −50 dB以上</div><div id="countB" class="value">—</div><div id="highestB" class="hint">最高倍音: —</div><div id="tiltB" class="hint">スペクトル傾斜: —</div></div>
   <div class="metric"><div class="label">C: −30 / −40 / −50 dB以上</div><div id="countC" class="value">—</div><div id="highestC" class="hint">最高倍音: —</div><div id="tiltC" class="hint">スペクトル傾斜: —</div></div>
 </div>
-<div class="controls" style="margin-top:12px"><button id="toggleHarmonics">H11以降も表示</button></div>
+<div class="controls" style="margin-top:12px">
+  <button id="toggleHarmonics">H11以降も表示</button>
+  <label for="harmonicFilter">表示フィルター：</label>
+  <select id="harmonicFilter">
+    <option value="all">すべて</option>
+    <option value="-30">−30 dB以上</option>
+    <option value="-40">−40 dB以上</option>
+    <option value="-50">−50 dB以上</option>
+  </select>
+</div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.6.6では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.6.7では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
@@ -137,7 +146,7 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 const $=id=>document.getElementById(id);
 let audioCtx=null;function getAudioContext(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
 const tracks={1:{buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[]},2:{buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[]}};
-let selectedPoint="A",showAllHarmonics=false,maxFrequencySetting=5000;
+let selectedPoint="A",showAllHarmonics=false,maxFrequencySetting=5000,harmonicFilter="all";
 let points={A:{track:null,time:null,spectrum:null},B:{track:null,time:null,spectrum:null},C:{track:null,time:null,spectrum:null}};
 function pointStyle(k){return {A:"#d92d20",B:"#039855",C:"#7a5af8"}[k]}
 function setSelectedPoint(p){
@@ -270,31 +279,81 @@ function spectralTiltDbPerOctave(sp){
   return num/den;
 }
 
-function summarize(label){const sp=points[label].spectrum;if(!sp||!sp.f0){$("count"+label).textContent="—";$("highest"+label).textContent="最高倍音: —";return}let c30=0,c40=0,c50=0,highest40=0;for(let h=1;h<=maxHarmonicNumber(sp);h++){const info=harmonicInfo(sp,h);if(!info)continue;if(info.db>=-30)c30++;if(info.db>=-40){c40++;highest40=h}if(info.db>=-50)c50++}$("count"+label).textContent=`${c30} / ${c40} / ${c50}`;$("highest"+label).textContent="−40 dB以上の最高倍音: H"+(highest40||"—")}
-function updateHarmonics(){
-  summarize("A");summarize("B");summarize("C");
+function spectralTiltDbPerOctave(sp){
+  if(!sp||!sp.f0)return null;
+  const maxH=maxHarmonicNumber(sp);
+  const xs=[],ys=[];
+  for(let h=1;h<=maxH;h++){
+    const info=harmonicInfo(sp,h);
+    if(!info||info.db<-60)continue;
+    xs.push(Math.log2(info.hz/sp.f0));
+    ys.push(info.db);
+  }
+  if(xs.length<4)return null;
+  const mx=xs.reduce((a,b)=>a+b,0)/xs.length;
+  const my=ys.reduce((a,b)=>a+b,0)/ys.length;
+  let num=0,den=0;
+  for(let i=0;i<xs.length;i++){
+    const dx=xs[i]-mx;
+    num+=dx*(ys[i]-my);
+    den+=dx*dx;
+  }
+  return den?num/den:null;
+}
 
-  const maxH = Math.max(10,
+function summarize(label){
+  const sp=points[label].spectrum;
+  if(!sp||!sp.f0){
+    $("count"+label).textContent="—";
+    $("highest"+label).textContent="最高倍音: —";
+    $("tilt"+label).textContent="スペクトル傾斜: —";
+    return;
+  }
+
+  let c30=0,c40=0,c50=0,highest40=0;
+  for(let h=1;h<=maxHarmonicNumber(sp);h++){
+    const info=harmonicInfo(sp,h);
+    if(!info)continue;
+    if(info.db>=-30)c30++;
+    if(info.db>=-40){c40++;highest40=h;}
+    if(info.db>=-50)c50++;
+  }
+
+  $("count"+label).textContent=`${c30} / ${c40} / ${c50}`;
+  $("highest"+label).textContent="−40 dB以上の最高倍音: "+(highest40?`H${highest40}`:"—");
+
+  const tilt=spectralTiltDbPerOctave(sp);
+  $("tilt"+label).textContent="スペクトル傾斜: "+(tilt==null?"—":`${tilt.toFixed(1)} dB/oct`);
+}
+
+function updateHarmonics(){
+  summarize("A");
+  summarize("B");
+  summarize("C");
+
+  const maxH=Math.max(
+    10,
     ...["A","B","C"].map(k=>maxHarmonicNumber(points[k].spectrum))
   );
   const displayMax=showAllHarmonics?maxH:Math.min(10,maxH);
+  const threshold=harmonicFilter==="all"?null:Number(harmonicFilter);
 
-  const threshold = harmonicFilter==="all" ? null : Number(harmonicFilter);
   let rows="";
 
   for(let h=1;h<=displayMax;h++){
-    const infos = {};
-    let anyPass = threshold===null;
+    const infos={};
+    let rowVisible=(threshold===null);
 
     for(const label of ["A","B","C"]){
-      infos[label]=harmonicInfo(points[label].spectrum,h);
-      if(threshold!==null && infos[label] && infos[label].db>=threshold){
-        anyPass=true;
+      const info=harmonicInfo(points[label].spectrum,h);
+      infos[label]=info;
+      if(threshold!==null && info && info.db>=threshold){
+        rowVisible=true;
       }
     }
 
-    // With a threshold selected, hide the entire harmonic row if A/B/C are all below it.
-    if(!anyPass) continue;
+    // If a threshold is active, omit a harmonic row only when A/B/C are all below threshold.
+    if(!rowVisible)continue;
 
     let cells="";
     for(const label of ["A","B","C"]){
@@ -311,14 +370,25 @@ function updateHarmonics(){
   }
 
   if(!rows){
-    rows='<tr><td colspan="4" style="text-align:center;color:#667085">この閾値以上の倍音はありません。</td></tr>';
+    const msg=(threshold===null)
+      ?"A/B/Cの地点を指定してください。"
+      :"この閾値以上の倍音はありません。";
+    rows=`<tr><td colspan="4" style="text-align:center;color:#667085">${msg}</td></tr>`;
   }
 
   $("harmonicsBody").innerHTML=rows;
   $("toggleHarmonics").textContent=showAllHarmonics?"H1〜H10だけ表示":"H11以降も表示";
 }
 
-$("toggleHarmonics").onclick=()=>{showAllHarmonics=!showAllHarmonics;updateHarmonics()};
+$("toggleHarmonics").onclick=()=>{
+  showAllHarmonics=!showAllHarmonics;
+  updateHarmonics();
+};
+
+$("harmonicFilter").addEventListener("change",e=>{
+  harmonicFilter=e.target.value;
+  updateHarmonics();
+});
 setSelectedPoint("A");
 updateSpectrumLegend();
 drawSpectrumComparison();
