@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.6.1</title>
+<title>歌唱音響分析器 v0.6.2</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -37,7 +37,7 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.6.1</h1>
+<h1>歌唱音響分析器 v0.6.2</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 <section class="panel">
@@ -94,10 +94,10 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 <div class="section-title">3. F0（基本周波数）</div>
 <div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div>
   <canvas id="f0Canvas1" width="1000" height="180"></canvas>
-<div class="graph-meta"><span>縦軸：F0（70–700 Hz、対数表示）</span><span>横軸：時間（秒）</span></div></div>
+</div>
 <div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div>
   <canvas id="f0Canvas2" width="1000" height="180"></canvas>
-<div class="graph-meta"><span>縦軸：F0（70–700 Hz、対数表示）</span><span>横軸：時間（秒）</span></div></div>
+</div>
 <p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>F0（Hz、対数表示）。青＝推定された基本周波数。A/B/Cの縦線は、それぞれ選択した録音のグラフに表示されます。簡易自己相関法で推定しています。</p>
 </section>
 
@@ -129,7 +129,7 @@ select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 </div>
 <div class="controls" style="margin-top:12px"><button id="toggleHarmonics">H11以降も表示</button></div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.6.1では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.6.2では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
