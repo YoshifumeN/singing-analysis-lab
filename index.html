@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.8.0</title>
+<title>歌唱音響分析器 v0.9.0</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
 body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
-main{max-width:1050px;margin:0 auto;padding:24px}
+main{max-width:1260px;margin:0 auto;padding:24px}
 h1{font-size:1.55rem;margin:0 0 6px}
 .subtitle,.hint,.status{color:var(--muted)}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
@@ -17,7 +17,7 @@ button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8
 button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 button:disabled{opacity:.45;cursor:not-allowed}
 canvas{width:100%;height:220px;border:1px solid var(--line);border-radius:8px;background:#fff;display:block}
-.small canvas{height:180px}
+.small canvas{height:190px}
 .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}
 .metric{border:1px solid var(--line);border-radius:8px;padding:10px}
 .metric .label{font-size:.82rem;color:var(--muted)}
@@ -35,11 +35,25 @@ th:first-child,td:first-child{text-align:left}
 select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 9px}
 progress{width:100%;height:14px;margin-top:10px}
 .notice{background:#f8fafc;border:1px solid #e4e7ec;border-radius:8px;padding:10px;margin-top:10px}
+
+.track-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.track-card{min-width:0;border:1px solid #eaecf0;border-radius:10px;padding:12px;background:#fcfcfd}
+.track-card input[type=file]{max-width:100%}
+.axis-info{font-size:.82rem;color:var(--muted);margin:4px 2px 6px}
+.wave-wrap{margin-bottom:16px}
+.wave-wrap>canvas{height:140px}
+.clip-panel{display:none;margin-top:8px;padding:8px;border:1px dashed #d0d5dd;border-radius:8px;background:#fafafa}
+.clip-panel.active{display:block}
+.clip-panel canvas{height:92px}
+.clip-info{font-size:.82rem;color:var(--muted);margin-bottom:5px}
+.wave-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
+@media(max-width:900px){.track-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.8.0</h1>
+<h1>歌唱音響分析器 v0.9.0</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 
@@ -63,119 +77,174 @@ progress{width:100%;height:14px;margin-top:10px}
 </div>
 </section>
 
+
 <section class="panel">
 <div class="section-title">1. 音声を入れる（3録音を独立に保持）</div>
-<div class="row">
+<div class="track-grid">
 
-  <div>
-    <strong>録音 1</strong>
-    <div class="controls" style="margin-top:8px">
-      <input id="fileInput1" type="file" accept="audio/*">
-      <button id="recordBtn1">録音開始</button>
-      <button id="stopBtn1" disabled>録音停止</button>
-      <button id="playBtn1" disabled>再生</button>
-      <button id="stopPlayBtn1" disabled>停止</button>
-    </div>
-    <div id="status1" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
-    <div class="meta">
-      <div class="metric"><div class="label">長さ</div><div id="duration1" class="value">—</div></div>
-      <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate1" class="value">—</div></div>
-    </div>
+<div class="track-card">
+  <strong>録音 1</strong>
+  <div class="controls" style="margin-top:8px">
+    <input id="fileInput1" type="file" accept="audio/*">
   </div>
-  <div>
-    <strong>録音 2</strong>
-    <div class="controls" style="margin-top:8px">
-      <input id="fileInput2" type="file" accept="audio/*">
-      <button id="recordBtn2">録音開始</button>
-      <button id="stopBtn2" disabled>録音停止</button>
-      <button id="playBtn2" disabled>再生</button>
-      <button id="stopPlayBtn2" disabled>停止</button>
-    </div>
-    <div id="status2" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
-    <div class="meta">
-      <div class="metric"><div class="label">長さ</div><div id="duration2" class="value">—</div></div>
-      <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate2" class="value">—</div></div>
-    </div>
+  <div class="controls" style="margin-top:8px">
+    <button id="recordBtn1">録音開始</button>
+    <button id="stopBtn1" disabled>録音停止</button>
   </div>
-  <div>
-    <strong>録音 3</strong>
-    <div class="controls" style="margin-top:8px">
-      <input id="fileInput3" type="file" accept="audio/*">
-      <button id="recordBtn3">録音開始</button>
-      <button id="stopBtn3" disabled>録音停止</button>
-      <button id="playBtn3" disabled>再生</button>
-      <button id="stopPlayBtn3" disabled>停止</button>
-    </div>
-    <div id="status3" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
-    <div class="meta">
-      <div class="metric"><div class="label">長さ</div><div id="duration3" class="value">—</div></div>
-      <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate3" class="value">—</div></div>
-    </div>
+  <div id="status1" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
+  <div class="meta">
+    <div class="metric"><div class="label">長さ</div><div id="duration1" class="value">—</div></div>
+    <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate1" class="value">—</div></div>
   </div>
 </div>
-<div class="meta" style="margin-top:14px">
-<div class="metric"><div class="label">地点 A</div><div id="cursorTimeA" class="value">—</div><div id="cursorF0A" class="hint">F0: —</div><div id="cursorTrackA" class="hint">録音: —</div></div>
-<div class="metric"><div class="label">地点 B</div><div id="cursorTimeB" class="value">—</div><div id="cursorF0B" class="hint">F0: —</div><div id="cursorTrackB" class="hint">録音: —</div></div>
-<div class="metric"><div class="label">地点 C</div><div id="cursorTimeC" class="value">—</div><div id="cursorF0C" class="hint">F0: —</div><div id="cursorTrackC" class="hint">録音: —</div></div>
+<div class="track-card">
+  <strong>録音 2</strong>
+  <div class="controls" style="margin-top:8px">
+    <input id="fileInput2" type="file" accept="audio/*">
+  </div>
+  <div class="controls" style="margin-top:8px">
+    <button id="recordBtn2">録音開始</button>
+    <button id="stopBtn2" disabled>録音停止</button>
+  </div>
+  <div id="status2" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
+  <div class="meta">
+    <div class="metric"><div class="label">長さ</div><div id="duration2" class="value">—</div></div>
+    <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate2" class="value">—</div></div>
+  </div>
+</div>
+<div class="track-card">
+  <strong>録音 3</strong>
+  <div class="controls" style="margin-top:8px">
+    <input id="fileInput3" type="file" accept="audio/*">
+  </div>
+  <div class="controls" style="margin-top:8px">
+    <button id="recordBtn3">録音開始</button>
+    <button id="stopBtn3" disabled>録音停止</button>
+  </div>
+  <div id="status3" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
+  <div class="meta">
+    <div class="metric"><div class="label">長さ</div><div id="duration3" class="value">—</div></div>
+    <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate3" class="value">—</div></div>
+  </div>
+</div>
 </div>
 </section>
 
 
 
 
+
 <section class="panel">
-<div class="section-title">2. 波形＋音量包絡</div>
+<div class="section-title">2. 波形＋音量包絡・解析地点・クリップ</div>
+
+<div class="meta" style="margin-bottom:12px">
+<div class="metric"><div class="label">地点 A</div><div id="cursorTimeA" class="value">—</div><div id="cursorF0A" class="hint">F0: —</div><div id="cursorTrackA" class="hint">録音: —</div></div>
+<div class="metric"><div class="label">地点 B</div><div id="cursorTimeB" class="value">—</div><div id="cursorF0B" class="hint">F0: —</div><div id="cursorTrackB" class="hint">録音: —</div></div>
+<div class="metric"><div class="label">地点 C</div><div id="cursorTimeC" class="value">—</div><div id="cursorF0C" class="hint">F0: —</div><div id="cursorTrackC" class="hint">録音: —</div></div>
+</div>
+
 <div class="controls" style="margin-bottom:8px">
 <button id="selectA" class="primary">地点Aを選択</button>
 <button id="selectB">地点Bを選択</button>
 <button id="selectC">地点Cを選択</button>
 <button id="selectPlayhead">再生位置を選択</button>
+<button id="selectClip1">クリップ点1</button>
+<button id="selectClip2">クリップ点2</button>
 </div>
-<div class="controls" style="margin-bottom:10px">
+
+<div class="controls" style="margin-bottom:12px">
 <button id="clearA">Aを解除</button>
 <button id="clearB">Bを解除</button>
 <button id="clearC">Cを解除</button>
 </div>
 
-<div style="margin-bottom:14px">
-  <div class="controls" style="justify-content:space-between;margin-bottom:4px">
-    <span class="hint"><strong>録音 1</strong></span>
-    <span id="playTime1" class="status">再生位置: —</span>
+
+<div class="wave-wrap">
+  <div class="wave-head">
+    <strong>録音 1</strong>
+    <div class="controls">
+      <button id="playBtn1" disabled>再生</button>
+      <button id="stopPlayBtn1" disabled>停止</button>
+      <button id="clearClip1">クリップ解除</button>
+      <span id="playTime1" class="status">再生位置: —</span>
+    </div>
   </div>
-  <canvas id="waveCanvas1" width="1000" height="220"></canvas>
-</div>
-<div style="margin-bottom:14px">
-  <div class="controls" style="justify-content:space-between;margin-bottom:4px">
-    <span class="hint"><strong>録音 2</strong></span>
-    <span id="playTime2" class="status">再生位置: —</span>
+  <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝相対振幅／相対音量</div>
+  <canvas id="waveCanvas1" width="1000" height="140"></canvas>
+  <div id="clipPanel1" class="clip-panel">
+    <div id="clipInfo1" class="clip-info">クリップ: —</div>
+    <canvas id="clipCanvas1" width="1000" height="92"></canvas>
   </div>
-  <canvas id="waveCanvas2" width="1000" height="220"></canvas>
 </div>
-<div style="margin-bottom:14px">
-  <div class="controls" style="justify-content:space-between;margin-bottom:4px">
-    <span class="hint"><strong>録音 3</strong></span>
-    <span id="playTime3" class="status">再生位置: —</span>
+<div class="wave-wrap">
+  <div class="wave-head">
+    <strong>録音 2</strong>
+    <div class="controls">
+      <button id="playBtn2" disabled>再生</button>
+      <button id="stopPlayBtn2" disabled>停止</button>
+      <button id="clearClip2">クリップ解除</button>
+      <span id="playTime2" class="status">再生位置: —</span>
+    </div>
   </div>
-  <canvas id="waveCanvas3" width="1000" height="220"></canvas>
+  <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝相対振幅／相対音量</div>
+  <canvas id="waveCanvas2" width="1000" height="140"></canvas>
+  <div id="clipPanel2" class="clip-panel">
+    <div id="clipInfo2" class="clip-info">クリップ: —</div>
+    <canvas id="clipCanvas2" width="1000" height="92"></canvas>
+  </div>
 </div>
-<p class="hint">横軸＝時間（秒）、縦軸＝相対振幅／相対音量。灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡、黒の破線＝現在の再生位置です。A/B/Cを選んで波形をクリックすると解析地点を指定できます。「再生位置を選択」を選んでクリックすると、その位置から再生できます。</p>
+<div class="wave-wrap">
+  <div class="wave-head">
+    <strong>録音 3</strong>
+    <div class="controls">
+      <button id="playBtn3" disabled>再生</button>
+      <button id="stopPlayBtn3" disabled>停止</button>
+      <button id="clearClip3">クリップ解除</button>
+      <span id="playTime3" class="status">再生位置: —</span>
+    </div>
+  </div>
+  <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝相対振幅／相対音量</div>
+  <canvas id="waveCanvas3" width="1000" height="140"></canvas>
+  <div id="clipPanel3" class="clip-panel">
+    <div id="clipInfo3" class="clip-info">クリップ: —</div>
+    <canvas id="clipCanvas3" width="1000" height="92"></canvas>
+  </div>
+</div>
+
+<p class="hint">灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡、黒の破線＝現在の再生位置です。A/B/Cを選んで波形をクリックすると解析地点を指定できます。「再生位置を選択」ではクリック地点へ移動します。クリップ点1・2を指定すると、その区間を小窓に拡大し、3のF0もその区間だけ表示します。</p>
 </section>
+
 
 
 
 <section class="panel small">
 <div class="section-title">3. F0（基本周波数）</div>
 
-<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div>
-  <canvas id="f0Canvas1" width="1000" height="180"></canvas>
+<div style="margin-bottom:16px">
+  <div class="wave-head">
+    <strong>録音 1</strong>
+    <span id="f0Range1" class="status">表示範囲: —</span>
+  </div>
+  <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝音の高さ（F0：Hz / 音名）</div>
+  <canvas id="f0Canvas1" width="1000" height="190"></canvas>
 </div>
-<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div>
-  <canvas id="f0Canvas2" width="1000" height="180"></canvas>
+<div style="margin-bottom:16px">
+  <div class="wave-head">
+    <strong>録音 2</strong>
+    <span id="f0Range2" class="status">表示範囲: —</span>
+  </div>
+  <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝音の高さ（F0：Hz / 音名）</div>
+  <canvas id="f0Canvas2" width="1000" height="190"></canvas>
 </div>
-<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 3</strong></div>
-  <canvas id="f0Canvas3" width="1000" height="180"></canvas>
+<div style="margin-bottom:16px">
+  <div class="wave-head">
+    <strong>録音 3</strong>
+    <span id="f0Range3" class="status">表示範囲: —</span>
+  </div>
+  <div class="axis-info">横軸＝時間（秒）　｜　縦軸＝音の高さ（F0：Hz / 音名）</div>
+  <canvas id="f0Canvas3" width="1000" height="190"></canvas>
 </div>
-<p class="hint">横軸＝時間（秒）、縦軸＝F0（Hz、対数表示）。青＝推定された基本周波数。A/B/Cの縦線は、それぞれ選択した録音のグラフに表示されます。簡易自己相関法で推定しています。</p>
+<p class="hint">青＝推定された基本周波数です。クリップが設定されている録音はその範囲だけを表示し、設定されていない録音は全体を表示します。左側に代表的な音名と周波数を表示します。</p>
 </section>
 
 
@@ -196,7 +265,7 @@ progress{width:100%;height:14px;margin-top:10px}
 <div id="spectrumLegend" class="legend"></div>
 <canvas id="spectrumCanvas" width="1000" height="220"></canvas>
 
-<p class="hint">横軸＝周波数（Hz）、縦軸＝相対強度（dB）。A/B/Cの周波数スペクトルを重ねて比較します。各地点の最大ピークを0 dBとして正規化しています。</p>
+<p class="hint">横軸＝周波数（Hz）、縦軸＝相対強度（dB）。A/B/Cの周波数スペクトルを重ねて比較します。相対強度は割合表示ではなく、FFT magnitudeについて各地点の最大ピークを0 dBとして 20 log10(magnitude / max) で表しています。−20 dBは最大ピークの振幅の1/10、−40 dBは1/100です。</p>
 </section>
 
 <section class="panel">
@@ -217,7 +286,7 @@ progress{width:100%;height:14px;margin-top:10px}
   </select>
 </div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.8.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.9.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
@@ -235,7 +304,7 @@ const tracks={};
 for(const n of TRACK_IDS){
   tracks[n]={
     buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[],
-    waveBase:null,playPos:0,playStartCtx:0,playStartOffset:0,raf:null,isPlaying:false
+    waveBase:null,playPos:0,playStartCtx:0,playStartOffset:0,raf:null,isPlaying:false,clip1:null,clip2:null
   };
 }
 
@@ -257,11 +326,15 @@ function setSelectionMode(mode){
   selectionMode=mode;
   ["A","B","C"].forEach(k=>$("select"+k).classList.toggle("primary",k===mode));
   $("selectPlayhead").classList.toggle("primary",mode==="PLAY");
+  $("selectClip1").classList.toggle("primary",mode==="CLIP1");
+  $("selectClip2").classList.toggle("primary",mode==="CLIP2");
 }
 $("selectA").onclick=()=>setSelectionMode("A");
 $("selectB").onclick=()=>setSelectionMode("B");
 $("selectC").onclick=()=>setSelectionMode("C");
 $("selectPlayhead").onclick=()=>setSelectionMode("PLAY");
+$("selectClip1").onclick=()=>setSelectionMode("CLIP1");
+$("selectClip2").onclick=()=>setSelectionMode("CLIP2");
 
 function resetPointDisplay(label){
   $("cursorTime"+label).textContent="—";
@@ -273,6 +346,7 @@ function clearPoint(label){
   points[label]={track:null,time:null,spectrum:null};
   resetPointDisplay(label);
   TRACK_IDS.forEach(drawWave);
+  TRACK_IDS.forEach(drawClipPreview);
   TRACK_IDS.forEach(drawF0);
   drawSpectrumComparison();
   updateHarmonics();
@@ -288,6 +362,46 @@ function clearPointsForTrack(n){
       points[label]={track:null,time:null,spectrum:null};
       resetPointDisplay(label);
     }
+  }
+}
+
+
+function getClipRange(n){
+  const tr=tracks[n];
+  if(tr.clip1==null||tr.clip2==null)return null;
+  const a=Math.min(tr.clip1,tr.clip2),b=Math.max(tr.clip1,tr.clip2);
+  if(b-a<0.01)return null;
+  return [a,b];
+}
+
+function setClipPoint(n,which,t){
+  const tr=tracks[n];
+  if(which===1)tr.clip1=t;else tr.clip2=t;
+  drawWave(n);
+  drawClipPreview(n);
+  drawF0(n);
+}
+
+function clearClip(n){
+  tracks[n].clip1=null;
+  tracks[n].clip2=null;
+  drawWave(n);
+  drawClipPreview(n);
+  drawF0(n);
+}
+TRACK_IDS.forEach(n=>{
+  $("clearClip"+n).onclick=()=>clearClip(n);
+});
+
+function handleWaveClick(n,t){
+  if(selectionMode==="PLAY"){
+    setPlaybackPosition(n,t);
+  }else if(selectionMode==="CLIP1"){
+    setClipPoint(n,1,t);
+  }else if(selectionMode==="CLIP2"){
+    setClipPoint(n,2,t);
+  }else{
+    setPoint(selectionMode,n,t);
   }
 }
 
@@ -352,11 +466,16 @@ function setupTrackUI(n){
     const c=$("waveCanvas"+n),r=c.getBoundingClientRect();
     const x=(evt.clientX-r.left)/r.width*c.width;
     const t=Math.max(0,Math.min(tr.buffer.duration,x/c.width*tr.buffer.duration));
-    if(selectionMode==="PLAY"){
-      setPlaybackPosition(n,t);
-    }else{
-      setPoint(selectionMode,n,t);
-    }
+    handleWaveClick(n,t);
+  });
+
+  $("clipCanvas"+n).addEventListener("click",evt=>{
+    const range=getClipRange(n);
+    if(!range)return;
+    const c=$("clipCanvas"+n),r=c.getBoundingClientRect();
+    const x=(evt.clientX-r.left)/r.width*c.width;
+    const t=range[0]+x/c.width*(range[1]-range[0]);
+    handleWaveClick(n,t);
   });
 }
 TRACK_IDS.forEach(setupTrackUI);
@@ -385,6 +504,7 @@ function animatePlayback(n){
   tr.playPos=playbackTime(n);
   updatePlayTimeText(n);
   drawWave(n);
+  drawClipPreview(n);
   tr.raf=requestAnimationFrame(()=>animatePlayback(n));
 }
 
@@ -422,6 +542,7 @@ async function startPlayback(n){
     $("stopPlayBtn"+n).disabled=true;
     updatePlayTimeText(n);
     drawWave(n);
+    drawClipPreview(n);
   };
 
   animatePlayback(n);
@@ -442,6 +563,7 @@ function stopPlayback(n,keepPosition=true){
   $("stopPlayBtn"+n).disabled=true;
   updatePlayTimeText(n);
   drawWave(n);
+  drawClipPreview(n);
 }
 
 function setPlaybackPosition(n,t){
@@ -459,6 +581,8 @@ function prepareTrack(n){
   const tr=tracks[n],buf=tr.buffer;
   stopPlayback(n,false);
   tr.playPos=0;
+  tr.clip1=null;
+  tr.clip2=null;
   clearPointsForTrack(n);
 
   tr.mono=new Float32Array(buf.length);
@@ -474,6 +598,7 @@ function prepareTrack(n){
   computeF0(n);
   buildWaveBase(n);
   drawWave(n);
+  drawClipPreview(n);
   drawF0(n);
   updatePlayTimeText(n);
   drawSpectrumComparison();
@@ -577,6 +702,31 @@ function drawWave(n){
     ctx.stroke();
   }
 
+
+  const range=getClipRange(n);
+  if(range){
+    const x1=range[0]/tr.buffer.duration*w;
+    const x2=range[1]/tr.buffer.duration*w;
+    ctx.fillStyle="rgba(245,158,11,.10)";
+    ctx.fillRect(x1,0,x2-x1,h);
+    ctx.strokeStyle="#f59e0b";
+    ctx.setLineDash([5,4]);
+    ctx.lineWidth=1.5;
+    for(const x of [x1,x2]){
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }else{
+    for(const [value,color] of [[tr.clip1,"#f59e0b"],[tr.clip2,"#d97706"]]){
+      if(value==null)continue;
+      const x=value/tr.buffer.duration*w;
+      ctx.strokeStyle=color;
+      ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
   const playX=(tr.playPos||0)/tr.buffer.duration*w;
   ctx.strokeStyle="#111827";
   ctx.setLineDash([6,5]);
@@ -586,6 +736,75 @@ function drawWave(n){
   ctx.lineTo(playX,h);
   ctx.stroke();
   ctx.setLineDash([]);
+}
+
+
+function drawClipPreview(n){
+  const panel=$("clipPanel"+n),c=$("clipCanvas"+n),tr=tracks[n],range=getClipRange(n);
+  if(!range||!tr.buffer||!tr.mono){
+    panel.classList.remove("active");
+    $("clipInfo"+n).textContent="クリップ: —";
+    clearCanvas(c);
+    return;
+  }
+  panel.classList.add("active");
+  $("clipInfo"+n).textContent=`クリップ拡大: ${range[0].toFixed(3)}–${range[1].toFixed(3)} s（${(range[1]-range[0]).toFixed(3)} s）`;
+
+  const ctx=clearCanvas(c),w=c.width,h=c.height;
+  drawAxes(ctx,w,h);
+
+  const sr=tr.buffer.sampleRate;
+  const s0=Math.max(0,Math.floor(range[0]*sr));
+  const s1=Math.min(tr.mono.length,Math.ceil(range[1]*sr));
+  const span=Math.max(1,s1-s0);
+  const spp=span/w;
+
+  ctx.strokeStyle="#667085";ctx.lineWidth=1;ctx.beginPath();
+  for(let x=0;x<w;x++){
+    const a=s0+Math.floor(x*spp);
+    const b=Math.min(s1,s0+Math.floor((x+1)*spp));
+    let min=1,max=-1;
+    for(let i=a;i<b;i++){
+      const v=tr.mono[i];
+      if(v<min)min=v;if(v>max)max=v;
+    }
+    ctx.moveTo(x,h/2-min*h*.40);
+    ctx.lineTo(x,h/2-max*h*.40);
+  }
+  ctx.stroke();
+
+  const win=Math.max(32,Math.floor(sr*.02));
+  const hop=Math.max(16,Math.floor(sr*.005));
+  const env=[];let maxR=1e-9;
+  for(let s=s0;s<s1;s+=hop){
+    let ss=0,cnt=0,end=Math.min(s1,s+win);
+    for(let i=s;i<end;i++){ss+=tr.mono[i]*tr.mono[i];cnt++}
+    const rms=Math.sqrt(ss/Math.max(1,cnt));
+    env.push([s/sr,rms]);if(rms>maxR)maxR=rms;
+  }
+  ctx.strokeStyle="#2563eb";ctx.lineWidth=2;ctx.beginPath();
+  env.forEach(([t,r],i)=>{
+    const x=(t-range[0])/(range[1]-range[0])*w;
+    const y=h-7-r/maxR*(h-14);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  for(const label of ["A","B","C"]){
+    const p=points[label];
+    if(p.track!==n||p.time==null||p.time<range[0]||p.time>range[1])continue;
+    const x=(p.time-range[0])/(range[1]-range[0])*w;
+    ctx.strokeStyle=pointStyle(label);ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+  }
+
+  const pt=tr.playPos||0;
+  if(pt>=range[0]&&pt<=range[1]){
+    const x=(pt-range[0])/(range[1]-range[0])*w;
+    ctx.strokeStyle="#111827";ctx.setLineDash([6,5]);
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+    ctx.setLineDash([]);
+  }
 }
 
 function autocorrelationF0(data,sr,start,size){
@@ -604,7 +823,7 @@ function autocorrelationF0(data,sr,start,size){
   rms=Math.sqrt(rms/len);
   if(rms<.008)return null;
 
-  const minHz=70,maxHz=700;
+  const minHz=60,maxHz=800;
   const minLag=Math.floor(sr/maxHz);
   const maxLag=Math.min(len-2,Math.floor(sr/minHz));
   let bestLag=-1,best=-1;
@@ -633,31 +852,61 @@ function computeF0(n){
 
 function drawF0(n){
   const tr=tracks[n],c=$("f0Canvas"+n),ctx=clearCanvas(c),w=c.width,h=c.height;
-  drawAxes(ctx,w,h);
-  if(!tr.buffer)return;
+  if(!tr.buffer){
+    $("f0Range"+n).textContent="表示範囲: —";
+    return;
+  }
 
-  const minF=70,maxF=700;
-  ctx.strokeStyle="#2563eb";
-  ctx.lineWidth=1.7;
-  let pen=false;
-  ctx.beginPath();
+  const range=getClipRange(n)||[0,tr.buffer.duration];
+  const t0=range[0],t1=range[1],span=Math.max(.001,t1-t0);
+  $("f0Range"+n).textContent=`表示範囲: ${t0.toFixed(3)}–${t1.toFixed(3)} s`;
+
+  const left=92,right=14,top=10,bottom=30;
+  const pw=w-left-right,ph=h-top-bottom;
+  const minF=60,maxF=800;
+
+  ctx.strokeStyle="#d0d5dd";
+  ctx.strokeRect(left+.5,top+.5,pw-1,ph-1);
+
+  const pitchTicks=[
+    [65.41,"C2"],[130.81,"C3"],[261.63,"C4"],[440.00,"A4"],[523.25,"C5"],[783.99,"G5"]
+  ];
+
+  ctx.font="12px system-ui";
+  ctx.textAlign="right";
+  for(const [f,name] of pitchTicks){
+    if(f<minF||f>maxF)continue;
+    const y=top+ph-Math.log(f/minF)/Math.log(maxF/minF)*ph;
+    ctx.strokeStyle="#eaecf0";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(left+pw,y);ctx.stroke();
+    ctx.fillStyle="#667085";
+    ctx.fillText(`${name}  ${Math.round(f)} Hz`,left-8,y+4);
+  }
+
+  ctx.textAlign="center";
+  for(let i=0;i<=4;i++){
+    const t=t0+span*i/4;
+    const x=left+pw*i/4;
+    ctx.fillStyle="#667085";
+    ctx.fillText(t.toFixed(span<2?2:1)+" s",x,h-8);
+  }
+
+  ctx.strokeStyle="#2563eb";ctx.lineWidth=1.8;
+  let pen=false;ctx.beginPath();
   for(const [t,f] of tr.f0){
-    if(!f||f<minF||f>maxF){pen=false;continue}
-    const x=t/tr.buffer.duration*w;
-    const y=h-10-Math.log(f/minF)/Math.log(maxF/minF)*(h-20);
+    if(t<t0||t>t1||!f||f<minF||f>maxF){pen=false;continue}
+    const x=left+(t-t0)/span*pw;
+    const y=top+ph-Math.log(f/minF)/Math.log(maxF/minF)*ph;
     if(!pen){ctx.moveTo(x,y);pen=true}else ctx.lineTo(x,y);
   }
   ctx.stroke();
 
   for(const label of ["A","B","C"]){
     const p=points[label];
-    if(p.track!==n||p.time==null)continue;
-    const x=p.time/tr.buffer.duration*w;
-    ctx.strokeStyle=pointStyle(label);
-    ctx.beginPath();
-    ctx.moveTo(x,0);
-    ctx.lineTo(x,h);
-    ctx.stroke();
+    if(p.track!==n||p.time==null||p.time<t0||p.time>t1)continue;
+    const x=left+(p.time-t0)/span*pw;
+    ctx.strokeStyle=pointStyle(label);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+ph);ctx.stroke();
   }
 }
 
@@ -739,6 +988,7 @@ function setPoint(label,n,t){
   $("cursorTrack"+label).textContent="録音: "+n;
 
   TRACK_IDS.forEach(drawWave);
+  TRACK_IDS.forEach(drawClipPreview);
   TRACK_IDS.forEach(drawF0);
   drawSpectrumComparison();
   updateHarmonics();
@@ -1030,7 +1280,7 @@ function saveSpectrumPng(){
 
   ctx.fillStyle="#667085";
   ctx.font="18px system-ui";
-  ctx.fillText("歌唱音響分析器 v0.8.0",80,860);
+  ctx.fillText("歌唱音響分析器 v0.9.0",80,860);
 
   out.toBlob(blob=>{
     if(!blob)return;
