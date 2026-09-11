@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.9.0</title>
+<title>歌唱音響分析器 v0.10.0</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -49,11 +49,53 @@ progress{width:100%;height:14px;margin-top:10px}
 .wave-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
 @media(max-width:900px){.track-grid{grid-template-columns:1fr}}
 
+
+.section2-panel{position:relative}
+.section2-content{padding-right:220px}
+.control-palette{
+  position:absolute;
+  top:64px;
+  right:14px;
+  width:190px;
+  z-index:20;
+  border:1px solid #d0d5dd;
+  border-radius:10px;
+  background:rgba(255,255,255,.97);
+  box-shadow:0 8px 24px rgba(16,24,40,.12);
+  padding:10px;
+}
+.control-palette .palette-handle{
+  cursor:move;
+  user-select:none;
+  font-weight:700;
+  font-size:.9rem;
+  padding:2px 2px 8px;
+  border-bottom:1px solid #eaecf0;
+  margin-bottom:8px;
+}
+.control-palette .palette-group{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-bottom:8px;
+}
+.control-palette .palette-group:last-child{margin-bottom:0}
+.control-palette button{flex:1 1 78px}
+@media(max-width:900px){
+  .section2-content{padding-right:0}
+  .control-palette{
+    position:static;
+    width:auto;
+    margin-bottom:12px;
+  }
+  .control-palette .palette-handle{cursor:default}
+}
+
 </style>
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.9.0</h1>
+<h1>歌唱音響分析器 v0.10.0</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 
@@ -134,8 +176,35 @@ progress{width:100%;height:14px;margin-top:10px}
 
 
 
-<section class="panel">
+<section class="panel section2-panel">
 <div class="section-title">2. 波形＋音量包絡・解析地点・クリップ</div>
+<div id="controlPalette" class="control-palette">
+  <div id="paletteHandle" class="palette-handle">操作パレット</div>
+
+  <div class="palette-group">
+    <button id="selectA" class="primary">地点A</button>
+    <button id="selectB">地点B</button>
+    <button id="selectC">地点C</button>
+  </div>
+
+  <div class="palette-group">
+    <button id="clearA">A解除</button>
+    <button id="clearB">B解除</button>
+    <button id="clearC">C解除</button>
+  </div>
+
+  <div class="palette-group">
+    <button id="selectPlayhead">再生位置</button>
+  </div>
+
+  <div class="palette-group">
+    <button id="selectClip1">クリップ点1</button>
+    <button id="selectClip2">クリップ点2</button>
+  </div>
+</div>
+
+<div class="section2-content">
+
 
 <div class="meta" style="margin-bottom:12px">
 <div class="metric"><div class="label">地点 A</div><div id="cursorTimeA" class="value">—</div><div id="cursorF0A" class="hint">F0: —</div><div id="cursorTrackA" class="hint">録音: —</div></div>
@@ -143,20 +212,7 @@ progress{width:100%;height:14px;margin-top:10px}
 <div class="metric"><div class="label">地点 C</div><div id="cursorTimeC" class="value">—</div><div id="cursorF0C" class="hint">F0: —</div><div id="cursorTrackC" class="hint">録音: —</div></div>
 </div>
 
-<div class="controls" style="margin-bottom:8px">
-<button id="selectA" class="primary">地点Aを選択</button>
-<button id="selectB">地点Bを選択</button>
-<button id="selectC">地点Cを選択</button>
-<button id="selectPlayhead">再生位置を選択</button>
-<button id="selectClip1">クリップ点1</button>
-<button id="selectClip2">クリップ点2</button>
-</div>
 
-<div class="controls" style="margin-bottom:12px">
-<button id="clearA">Aを解除</button>
-<button id="clearB">Bを解除</button>
-<button id="clearC">Cを解除</button>
-</div>
 
 
 <div class="wave-wrap">
@@ -212,6 +268,8 @@ progress{width:100%;height:14px;margin-top:10px}
 </div>
 
 <p class="hint">灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡、黒の破線＝現在の再生位置です。A/B/Cを選んで波形をクリックすると解析地点を指定できます。「再生位置を選択」ではクリック地点へ移動します。クリップ点1・2を指定すると、その区間を小窓に拡大し、3のF0もその区間だけ表示します。</p>
+
+</div>
 </section>
 
 
@@ -263,9 +321,10 @@ progress{width:100%;height:14px;margin-top:10px}
 <button id="saveSpectrumPng">PNG保存</button>
 </div>
 <div id="spectrumLegend" class="legend"></div>
+<div class="axis-info">横軸＝周波数（Hz）　｜　縦軸＝相対強度（dB）</div>
 <canvas id="spectrumCanvas" width="1000" height="220"></canvas>
 
-<p class="hint">横軸＝周波数（Hz）、縦軸＝相対強度（dB）。A/B/Cの周波数スペクトルを重ねて比較します。相対強度は割合表示ではなく、FFT magnitudeについて各地点の最大ピークを0 dBとして 20 log10(magnitude / max) で表しています。−20 dBは最大ピークの振幅の1/10、−40 dBは1/100です。</p>
+<p class="hint">A/B/Cの周波数スペクトルを重ねて比較します。相対強度は割合表示ではなく、FFT magnitudeについて各地点の最大ピークを0 dBとして 20 log10(magnitude / max) で表しています。−20 dBは最大ピークの振幅の1/10、−40 dBは1/100です。</p>
 </section>
 
 <section class="panel">
@@ -286,7 +345,7 @@ progress{width:100%;height:14px;margin-top:10px}
   </select>
 </div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.9.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.10.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
@@ -329,7 +388,65 @@ function setSelectionMode(mode){
   $("selectClip1").classList.toggle("primary",mode==="CLIP1");
   $("selectClip2").classList.toggle("primary",mode==="CLIP2");
 }
-$("selectA").onclick=()=>setSelectionMode("A");
+$("selectA").onclick=()=>
+(function enableDraggablePalette(){
+  const palette=$("controlPalette");
+  const handle=$("paletteHandle");
+  const section=palette?.closest(".section2-panel");
+  if(!palette||!handle||!section)return;
+
+  let dragging=false;
+  let startX=0,startY=0,startLeft=0,startTop=0;
+
+  handle.addEventListener("pointerdown",e=>{
+    if(window.innerWidth<=900)return;
+    dragging=true;
+    handle.setPointerCapture(e.pointerId);
+
+    const pRect=palette.getBoundingClientRect();
+    const sRect=section.getBoundingClientRect();
+
+    // Convert initial right-positioned layout into explicit left/top coordinates.
+    startLeft=pRect.left-sRect.left;
+    startTop=pRect.top-sRect.top;
+    palette.style.left=startLeft+"px";
+    palette.style.top=startTop+"px";
+    palette.style.right="auto";
+
+    startX=e.clientX;
+    startY=e.clientY;
+    e.preventDefault();
+  });
+
+  handle.addEventListener("pointermove",e=>{
+    if(!dragging)return;
+
+    const sRect=section.getBoundingClientRect();
+    const pRect=palette.getBoundingClientRect();
+
+    let left=startLeft+(e.clientX-startX);
+    let top=startTop+(e.clientY-startY);
+
+    const maxLeft=Math.max(0,sRect.width-pRect.width);
+    const maxTop=Math.max(0,section.scrollHeight-pRect.height);
+
+    left=Math.max(0,Math.min(maxLeft,left));
+    top=Math.max(0,Math.min(maxTop,top));
+
+    palette.style.left=left+"px";
+    palette.style.top=top+"px";
+  });
+
+  const stopDrag=e=>{
+    if(!dragging)return;
+    dragging=false;
+    try{handle.releasePointerCapture(e.pointerId)}catch(_){}
+  };
+  handle.addEventListener("pointerup",stopDrag);
+  handle.addEventListener("pointercancel",stopDrag);
+})();
+
+setSelectionMode("A");
 $("selectB").onclick=()=>setSelectionMode("B");
 $("selectC").onclick=()=>setSelectionMode("C");
 $("selectPlayhead").onclick=()=>setSelectionMode("PLAY");
@@ -1280,7 +1397,7 @@ function saveSpectrumPng(){
 
   ctx.fillStyle="#667085";
   ctx.font="18px system-ui";
-  ctx.fillText("歌唱音響分析器 v0.9.0",80,860);
+  ctx.fillText("歌唱音響分析器 v0.10.0",80,860);
 
   out.toBlob(blob=>{
     if(!blob)return;
