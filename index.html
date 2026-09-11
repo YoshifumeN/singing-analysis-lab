@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.7.0</title>
+<title>歌唱音響分析器 v0.8.0</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -39,46 +39,19 @@ progress{width:100%;height:14px;margin-top:10px}
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.7.0</h1>
+<h1>歌唱音響分析器 v0.8.0</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
-<section class="panel">
-<div class="section-title">1. 音声を入れる（2録音を独立に保持）</div>
-<div class="row">
-  <div>
-    <strong>録音 1</strong>
-    <div class="controls" style="margin-top:8px">
-      <input id="fileInput1" type="file" accept="audio/*">
-      <button id="recordBtn1">録音開始</button><button id="stopBtn1" disabled>録音停止</button><button id="playBtn1" disabled>再生</button><button id="stopPlayBtn1" disabled>停止</button>
-    </div>
-    <div id="status1" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
-    <div class="meta"><div class="metric"><div class="label">長さ</div><div id="duration1" class="value">—</div></div><div class="metric"><div class="label">サンプルレート</div><div id="sampleRate1" class="value">—</div></div></div>
-  </div>
-  <div>
-    <strong>録音 2</strong>
-    <div class="controls" style="margin-top:8px">
-      <input id="fileInput2" type="file" accept="audio/*">
-      <button id="recordBtn2">録音開始</button><button id="stopBtn2" disabled>録音停止</button><button id="playBtn2" disabled>再生</button><button id="stopPlayBtn2" disabled>停止</button>
-    </div>
-    <div id="status2" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
-    <div class="meta"><div class="metric"><div class="label">長さ</div><div id="duration2" class="value">—</div></div><div class="metric"><div class="label">サンプルレート</div><div id="sampleRate2" class="value">—</div></div></div>
-  </div>
-</div>
-<div class="meta" style="margin-top:14px">
-<div class="metric"><div class="label">地点 A</div><div id="cursorTimeA" class="value">—</div><div id="cursorF0A" class="hint">F0: —</div><div id="cursorTrackA" class="hint">録音: —</div></div>
-<div class="metric"><div class="label">地点 B</div><div id="cursorTimeB" class="value">—</div><div id="cursorF0B" class="hint">F0: —</div><div id="cursorTrackB" class="hint">録音: —</div></div>
-<div class="metric"><div class="label">地点 C</div><div id="cursorTimeC" class="value">—</div><div id="cursorF0C" class="hint">F0: —</div><div id="cursorTrackC" class="hint">録音: —</div></div>
-</div>
-</section>
 
 <section class="panel">
-<div class="section-title">1A. 伴奏付き音声からボーカル抽出（実験）</div>
+<div class="section-title">0. 伴奏付き音声からボーカル抽出（実験）</div>
 <div class="controls">
   <input id="separationInput" type="file" accept="audio/*">
   <label for="separationDestination">抽出先：</label>
   <select id="separationDestination">
     <option value="1">録音 1</option>
     <option value="2">録音 2</option>
+    <option value="3">録音 3</option>
   </select>
   <button id="separateVocalsBtn">ボーカル抽出</button>
   <button id="saveVocalsBtn" disabled>抽出音声をWAV保存</button>
@@ -90,6 +63,65 @@ progress{width:100%;height:14px;margin-top:10px}
 </div>
 </section>
 
+<section class="panel">
+<div class="section-title">1. 音声を入れる（3録音を独立に保持）</div>
+<div class="row">
+
+  <div>
+    <strong>録音 1</strong>
+    <div class="controls" style="margin-top:8px">
+      <input id="fileInput1" type="file" accept="audio/*">
+      <button id="recordBtn1">録音開始</button>
+      <button id="stopBtn1" disabled>録音停止</button>
+      <button id="playBtn1" disabled>再生</button>
+      <button id="stopPlayBtn1" disabled>停止</button>
+    </div>
+    <div id="status1" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
+    <div class="meta">
+      <div class="metric"><div class="label">長さ</div><div id="duration1" class="value">—</div></div>
+      <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate1" class="value">—</div></div>
+    </div>
+  </div>
+  <div>
+    <strong>録音 2</strong>
+    <div class="controls" style="margin-top:8px">
+      <input id="fileInput2" type="file" accept="audio/*">
+      <button id="recordBtn2">録音開始</button>
+      <button id="stopBtn2" disabled>録音停止</button>
+      <button id="playBtn2" disabled>再生</button>
+      <button id="stopPlayBtn2" disabled>停止</button>
+    </div>
+    <div id="status2" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
+    <div class="meta">
+      <div class="metric"><div class="label">長さ</div><div id="duration2" class="value">—</div></div>
+      <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate2" class="value">—</div></div>
+    </div>
+  </div>
+  <div>
+    <strong>録音 3</strong>
+    <div class="controls" style="margin-top:8px">
+      <input id="fileInput3" type="file" accept="audio/*">
+      <button id="recordBtn3">録音開始</button>
+      <button id="stopBtn3" disabled>録音停止</button>
+      <button id="playBtn3" disabled>再生</button>
+      <button id="stopPlayBtn3" disabled>停止</button>
+    </div>
+    <div id="status3" class="status" style="margin-top:8px">音声ファイルを選ぶか、マイクで録音してください。</div>
+    <div class="meta">
+      <div class="metric"><div class="label">長さ</div><div id="duration3" class="value">—</div></div>
+      <div class="metric"><div class="label">サンプルレート</div><div id="sampleRate3" class="value">—</div></div>
+    </div>
+  </div>
+</div>
+<div class="meta" style="margin-top:14px">
+<div class="metric"><div class="label">地点 A</div><div id="cursorTimeA" class="value">—</div><div id="cursorF0A" class="hint">F0: —</div><div id="cursorTrackA" class="hint">録音: —</div></div>
+<div class="metric"><div class="label">地点 B</div><div id="cursorTimeB" class="value">—</div><div id="cursorF0B" class="hint">F0: —</div><div id="cursorTrackB" class="hint">録音: —</div></div>
+<div class="metric"><div class="label">地点 C</div><div id="cursorTimeC" class="value">—</div><div id="cursorF0C" class="hint">F0: —</div><div id="cursorTrackC" class="hint">録音: —</div></div>
+</div>
+</section>
+
+
+
 
 <section class="panel">
 <div class="section-title">2. 波形＋音量包絡</div>
@@ -97,31 +129,55 @@ progress{width:100%;height:14px;margin-top:10px}
 <button id="selectA" class="primary">地点Aを選択</button>
 <button id="selectB">地点Bを選択</button>
 <button id="selectC">地点Cを選択</button>
+<button id="selectPlayhead">再生位置を選択</button>
 </div>
 <div class="controls" style="margin-bottom:10px">
 <button id="clearA">Aを解除</button>
 <button id="clearB">Bを解除</button>
 <button id="clearC">Cを解除</button>
 </div>
-<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div>
+
+<div style="margin-bottom:14px">
+  <div class="controls" style="justify-content:space-between;margin-bottom:4px">
+    <span class="hint"><strong>録音 1</strong></span>
+    <span id="playTime1" class="status">再生位置: —</span>
+  </div>
   <canvas id="waveCanvas1" width="1000" height="220"></canvas>
 </div>
-<div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div>
+<div style="margin-bottom:14px">
+  <div class="controls" style="justify-content:space-between;margin-bottom:4px">
+    <span class="hint"><strong>録音 2</strong></span>
+    <span id="playTime2" class="status">再生位置: —</span>
+  </div>
   <canvas id="waveCanvas2" width="1000" height="220"></canvas>
 </div>
-<p class="hint">横軸＝時間（秒）、縦軸＝相対振幅／相対音量。灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡。A/B/Cのいずれかを選んでから、録音1または録音2の波形をクリックすると、その地点を比較対象として登録します。</p>
+<div style="margin-bottom:14px">
+  <div class="controls" style="justify-content:space-between;margin-bottom:4px">
+    <span class="hint"><strong>録音 3</strong></span>
+    <span id="playTime3" class="status">再生位置: —</span>
+  </div>
+  <canvas id="waveCanvas3" width="1000" height="220"></canvas>
+</div>
+<p class="hint">横軸＝時間（秒）、縦軸＝相対振幅／相対音量。灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡、黒の破線＝現在の再生位置です。A/B/Cを選んで波形をクリックすると解析地点を指定できます。「再生位置を選択」を選んでクリックすると、その位置から再生できます。</p>
 </section>
+
+
 
 <section class="panel small">
 <div class="section-title">3. F0（基本周波数）</div>
+
 <div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div>
   <canvas id="f0Canvas1" width="1000" height="180"></canvas>
 </div>
-<div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div>
+<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div>
   <canvas id="f0Canvas2" width="1000" height="180"></canvas>
+</div>
+<div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 3</strong></div>
+  <canvas id="f0Canvas3" width="1000" height="180"></canvas>
 </div>
 <p class="hint">横軸＝時間（秒）、縦軸＝F0（Hz、対数表示）。青＝推定された基本周波数。A/B/Cの縦線は、それぞれ選択した録音のグラフに表示されます。簡易自己相関法で推定しています。</p>
 </section>
+
 
 <section class="panel">
 <div class="section-title">4. A / B / C の周波数スペクトル比較</div>
@@ -135,6 +191,7 @@ progress{width:100%;height:14px;margin-top:10px}
   <option value="max">利用可能最大（Nyquist）</option>
 </select>
 <span id="actualFreqLimit" class="status"></span>
+<button id="saveSpectrumPng">PNG保存</button>
 </div>
 <div id="spectrumLegend" class="legend"></div>
 <canvas id="spectrumCanvas" width="1000" height="220"></canvas>
@@ -160,145 +217,663 @@ progress{width:100%;height:14px;margin-top:10px}
   </select>
 </div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.7.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.8.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
 <script>
 const $=id=>document.getElementById(id);
-let audioCtx=null;function getAudioContext(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
-const tracks={1:{buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[]},2:{buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[]}};
-let selectedPoint="A",showAllHarmonics=false,maxFrequencySetting=5000,harmonicFilter="all";
-let points={A:{track:null,time:null,spectrum:null},B:{track:null,time:null,spectrum:null},C:{track:null,time:null,spectrum:null}};
-function pointStyle(k){return {A:"#d92d20",B:"#039855",C:"#7a5af8"}[k]}
-function setSelectedPoint(p){
- selectedPoint=p;
- ["A","B","C"].forEach(k=>$("select"+k).classList.toggle("primary",k===p));
- $("selectOff").classList.toggle("primary",p===null);
+const TRACK_IDS=[1,2,3];
+
+let audioCtx=null;
+function getAudioContext(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
 }
-$("selectA").onclick=()=>setSelectedPoint("A");
-$("selectB").onclick=()=>setSelectedPoint("B");
-$("selectC").onclick=()=>setSelectedPoint("C");
+
+const tracks={};
+for(const n of TRACK_IDS){
+  tracks[n]={
+    buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[],
+    waveBase:null,playPos:0,playStartCtx:0,playStartOffset:0,raf:null,isPlaying:false
+  };
+}
+
+let selectionMode="A";
+let showAllHarmonics=false;
+let maxFrequencySetting=5000;
+let harmonicFilter="all";
+let points={
+  A:{track:null,time:null,spectrum:null},
+  B:{track:null,time:null,spectrum:null},
+  C:{track:null,time:null,spectrum:null}
+};
+
+function pointStyle(k){
+  return {A:"#d92d20",B:"#039855",C:"#7a5af8"}[k];
+}
+
+function setSelectionMode(mode){
+  selectionMode=mode;
+  ["A","B","C"].forEach(k=>$("select"+k).classList.toggle("primary",k===mode));
+  $("selectPlayhead").classList.toggle("primary",mode==="PLAY");
+}
+$("selectA").onclick=()=>setSelectionMode("A");
+$("selectB").onclick=()=>setSelectionMode("B");
+$("selectC").onclick=()=>setSelectionMode("C");
+$("selectPlayhead").onclick=()=>setSelectionMode("PLAY");
+
+function resetPointDisplay(label){
+  $("cursorTime"+label).textContent="—";
+  $("cursorF0"+label).textContent="F0: —";
+  $("cursorTrack"+label).textContent="録音: —";
+}
+
 function clearPoint(label){
- points[label]={track:null,time:null,spectrum:null};
- $("cursorTime"+label).textContent="—";
- $("cursorF0"+label).textContent="F0: —";
- $("cursorTrack"+label).textContent="録音: —";
- drawWave(1);drawWave(2);drawF0(1);drawF0(2);drawSpectrumComparison();updateHarmonics();updateSpectrumLegend();
+  points[label]={track:null,time:null,spectrum:null};
+  resetPointDisplay(label);
+  TRACK_IDS.forEach(drawWave);
+  TRACK_IDS.forEach(drawF0);
+  drawSpectrumComparison();
+  updateHarmonics();
+  updateSpectrumLegend();
 }
 $("clearA").onclick=()=>clearPoint("A");
 $("clearB").onclick=()=>clearPoint("B");
 $("clearC").onclick=()=>clearPoint("C");
-function setupTrackUI(n){
- $("fileInput"+n).addEventListener("change",async e=>{const file=e.target.files?.[0];if(!file)return;$("status"+n).textContent="読み込み中…";try{tracks[n].buffer=await getAudioContext().decodeAudioData((await file.arrayBuffer()).slice(0));prepareTrack(n);$("status"+n).textContent="読込完了: "+file.name}catch(err){console.error(err);$("status"+n).textContent="音声を読み込めませんでした。"}});
- $("recordBtn"+n).onclick=async()=>{try{const stream=await navigator.mediaDevices.getUserMedia({audio:true}),tr=tracks[n];tr.chunks=[];tr.recorder=new MediaRecorder(stream);tr.recorder.ondataavailable=e=>{if(e.data.size)tr.chunks.push(e.data)};tr.recorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());const blob=new Blob(tr.chunks,{type:tr.recorder.mimeType||"audio/webm"});try{tr.buffer=await getAudioContext().decodeAudioData((await blob.arrayBuffer()).slice(0));prepareTrack(n);$("status"+n).textContent="録音を解析しました。"}catch(err){console.error(err);$("status"+n).textContent="録音データを解析できませんでした。"}};tr.recorder.start();$("recordBtn"+n).disabled=true;$("stopBtn"+n).disabled=false;$("status"+n).textContent="録音中…"}catch(err){console.error(err);$("status"+n).textContent="マイクを使用できません。HTTPS上で開くか許可を確認してください。"}};
- $("stopBtn"+n).onclick=()=>{const tr=tracks[n];if(tr.recorder&&tr.recorder.state!=="inactive")tr.recorder.stop();$("recordBtn"+n).disabled=false;$("stopBtn"+n).disabled=true};
- $("playBtn"+n).onclick=async()=>{const tr=tracks[n];if(!tr.buffer)return;stopPlayback(n);const ctx=getAudioContext();await ctx.resume();tr.source=ctx.createBufferSource();tr.source.buffer=tr.buffer;tr.source.connect(ctx.destination);tr.source.start();$("playBtn"+n).disabled=true;$("stopPlayBtn"+n).disabled=false;tr.source.onended=()=>{tr.source=null;$("playBtn"+n).disabled=false;$("stopPlayBtn"+n).disabled=true}};
- $("stopPlayBtn"+n).onclick=()=>stopPlayback(n);
- $("waveCanvas"+n).addEventListener("click",evt=>{const tr=tracks[n];if(!tr.buffer||selectedPoint===null)return;const c=$("waveCanvas"+n),r=c.getBoundingClientRect(),x=(evt.clientX-r.left)/r.width*c.width,t=x/c.width*tr.buffer.duration;setPoint(selectedPoint,n,t)});
+
+function clearPointsForTrack(n){
+  for(const label of ["A","B","C"]){
+    if(points[label].track===n){
+      points[label]={track:null,time:null,spectrum:null};
+      resetPointDisplay(label);
+    }
+  }
 }
-setupTrackUI(1);setupTrackUI(2);
-function stopPlayback(n){const tr=tracks[n];if(tr.source){try{tr.source.stop()}catch(e){}tr.source.disconnect();tr.source=null}if(tr.buffer)$("playBtn"+n).disabled=false;$("stopPlayBtn"+n).disabled=true}
-function prepareTrack(n){const tr=tracks[n],buf=tr.buffer;tr.mono=new Float32Array(buf.length);for(let ch=0;ch<buf.numberOfChannels;ch++){const d=buf.getChannelData(ch);for(let i=0;i<buf.length;i++)tr.mono[i]+=d[i]/buf.numberOfChannels}$("duration"+n).textContent=buf.duration.toFixed(2)+" s";$("sampleRate"+n).textContent=buf.sampleRate+" Hz";$("playBtn"+n).disabled=false;computeF0(n);drawWave(n);drawF0(n)}
-function clearCanvas(c){const ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);ctx.strokeStyle="#d0d5dd";ctx.strokeRect(.5,.5,c.width-1,c.height-1);return ctx}
-function drawAxes(ctx,w,h){ctx.strokeStyle="#eaecf0";ctx.lineWidth=1;for(let i=1;i<4;i++){const y=h*i/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}}
-function drawWave(n){const tr=tracks[n],c=$("waveCanvas"+n),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);if(!tr.mono||!tr.buffer)return;const mono=tr.mono,buf=tr.buffer,spp=mono.length/w;ctx.strokeStyle="#667085";ctx.lineWidth=1;ctx.beginPath();for(let x=0;x<w;x++){const a=Math.floor(x*spp),b=Math.min(mono.length,Math.floor((x+1)*spp));let min=1,max=-1;for(let i=a;i<b;i++){const v=mono[i];if(v<min)min=v;if(v>max)max=v}ctx.moveTo(x,h/2-min*h*.42);ctx.lineTo(x,h/2-max*h*.42)}ctx.stroke();const sr=buf.sampleRate,win=Math.max(32,Math.floor(sr*.02)),hop=Math.max(16,Math.floor(sr*.01));let env=[],maxR=1e-9;for(let s=0;s<mono.length;s+=hop){let ss=0,cnt=0,end=Math.min(mono.length,s+win);for(let i=s;i<end;i++){ss+=mono[i]*mono[i];cnt++}const rms=Math.sqrt(ss/Math.max(1,cnt));env.push([s/sr,rms]);if(rms>maxR)maxR=rms}ctx.strokeStyle="#2563eb";ctx.lineWidth=2.2;ctx.beginPath();env.forEach(([t,r],i)=>{const x=t/buf.duration*w,y=h-10-r/maxR*(h-20);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();for(const label of ["A","B","C"]){const p=points[label];if(p.track!==n||p.time==null)continue;const x=p.time/buf.duration*w;ctx.strokeStyle=pointStyle(label);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}}
-function autocorrelationF0(data,sr,start,size){const end=Math.min(data.length,start+size),len=end-start;if(len<256)return null;let mean=0;for(let i=start;i<end;i++)mean+=data[i];mean/=len;let rms=0,x=new Float32Array(len);for(let i=0;i<len;i++){x[i]=data[start+i]-mean;rms+=x[i]*x[i]}rms=Math.sqrt(rms/len);if(rms<.008)return null;const minHz=70,maxHz=700,minLag=Math.floor(sr/maxHz),maxLag=Math.min(len-2,Math.floor(sr/minHz));let bestLag=-1,best=-1;for(let lag=minLag;lag<=maxLag;lag++){let num=0,a=0,b=0,m=len-lag;for(let i=0;i<m;i++){const u=x[i],v=x[i+lag];num+=u*v;a+=u*u;b+=v*v}const corr=num/Math.sqrt(a*b+1e-12);if(corr>best){best=corr;bestLag=lag}}if(best<.55||bestLag<0)return null;return sr/bestLag}
-function computeF0(n){const tr=tracks[n],sr=tr.buffer.sampleRate,win=Math.floor(sr*.06),hop=Math.floor(sr*.02);tr.f0=[];for(let s=0;s+win<tr.mono.length;s+=hop)tr.f0.push([s/sr,autocorrelationF0(tr.mono,sr,s,win)])}
-function drawF0(n){const tr=tracks[n],c=$("f0Canvas"+n),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);if(!tr.buffer)return;const minF=70,maxF=700;ctx.strokeStyle="#2563eb";ctx.lineWidth=1.7;let pen=false;ctx.beginPath();for(const [t,f] of tr.f0){if(!f||f<minF||f>maxF){pen=false;continue}const x=t/tr.buffer.duration*w,y=h-10-Math.log(f/minF)/Math.log(maxF/minF)*(h-20);if(!pen){ctx.moveTo(x,y);pen=true}else ctx.lineTo(x,y)}ctx.stroke();for(const label of ["A","B","C"]){const p=points[label];if(p.track!==n||p.time==null)continue;const x=p.time/tr.buffer.duration*w;ctx.strokeStyle=pointStyle(label);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}}
-function nearestF0(n,t){let best=null,dist=Infinity;for(const [tt,f] of tracks[n].f0){if(!f)continue;const d=Math.abs(tt-t);if(d<dist){dist=d;best=f}}return best}
-function hann(i,N){return .5*(1-Math.cos(2*Math.PI*i/(N-1)))}
-function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}for(let len=2;len<=n;len<<=1){const ang=-2*Math.PI/len,wc=Math.cos(ang),ws=Math.sin(ang);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let j=0;j<len/2;j++){const ur=re[i+j],ui=im[i+j],k=i+j+len/2,vr=re[k]*cr-im[k]*ci,vi=re[k]*ci+im[k]*cr;re[i+j]=ur+vr;im[i+j]=ui+vi;re[k]=ur-vr;im[k]=ui-vi;const nr=cr*wc-ci*ws;ci=cr*ws+ci*wc;cr=nr}}}}
-function buildSpectrum(n,t){const tr=tracks[n],sr=tr.buffer.sampleRate;let N=8192;while(N>2048&&N>tr.mono.length)N>>=1;const center=Math.floor(t*sr),start=Math.max(0,Math.min(Math.max(0,tr.mono.length-N),center-Math.floor(N/2))),re=new Float64Array(N),im=new Float64Array(N);let mean=0;for(let i=0;i<N;i++)mean+=tr.mono[start+i]||0;mean/=N;for(let i=0;i<N;i++)re[i]=((tr.mono[start+i]||0)-mean)*hann(i,N);fft(re,im);const mags=new Float64Array(N/2);let maxMag=1e-12;for(let k=1;k<N/2;k++){const m=Math.hypot(re[k],im[k]);mags[k]=m;if(m>maxMag)maxMag=m}return {mags,sr,N,maxMag,f0:nearestF0(n,t)}}
-function setPoint(label,n,t){const p=points[label];p.track=n;p.time=Math.max(0,Math.min(tracks[n].buffer.duration,t));p.spectrum=buildSpectrum(n,p.time);$("cursorTime"+label).textContent=p.time.toFixed(3)+" s";$("cursorF0"+label).textContent="F0: "+(p.spectrum.f0?p.spectrum.f0.toFixed(1)+" Hz":"—");$("cursorTrack"+label).textContent="録音: "+n;drawWave(1);drawWave(2);drawF0(1);drawF0(2);drawSpectrumComparison();updateHarmonics();updateSpectrumLegend()}
+
+function setupTrackUI(n){
+  $("fileInput"+n).addEventListener("change",async e=>{
+    const file=e.target.files?.[0];
+    if(!file)return;
+    $("status"+n).textContent="読み込み中…";
+    try{
+      const buf=await getAudioContext().decodeAudioData((await file.arrayBuffer()).slice(0));
+      tracks[n].buffer=buf;
+      prepareTrack(n);
+      $("status"+n).textContent="読込完了: "+file.name;
+    }catch(err){
+      console.error(err);
+      $("status"+n).textContent="音声を読み込めませんでした。";
+    }
+  });
+
+  $("recordBtn"+n).onclick=async()=>{
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      const tr=tracks[n];
+      tr.chunks=[];
+      tr.recorder=new MediaRecorder(stream);
+      tr.recorder.ondataavailable=e=>{if(e.data.size)tr.chunks.push(e.data)};
+      tr.recorder.onstop=async()=>{
+        stream.getTracks().forEach(t=>t.stop());
+        const blob=new Blob(tr.chunks,{type:tr.recorder.mimeType||"audio/webm"});
+        try{
+          tr.buffer=await getAudioContext().decodeAudioData((await blob.arrayBuffer()).slice(0));
+          prepareTrack(n);
+          $("status"+n).textContent="録音を解析しました。";
+        }catch(err){
+          console.error(err);
+          $("status"+n).textContent="録音データを解析できませんでした。";
+        }
+      };
+      tr.recorder.start();
+      $("recordBtn"+n).disabled=true;
+      $("stopBtn"+n).disabled=false;
+      $("status"+n).textContent="録音中…";
+    }catch(err){
+      console.error(err);
+      $("status"+n).textContent="マイクを使用できません。HTTPS上で開くか許可を確認してください。";
+    }
+  };
+
+  $("stopBtn"+n).onclick=()=>{
+    const tr=tracks[n];
+    if(tr.recorder&&tr.recorder.state!=="inactive")tr.recorder.stop();
+    $("recordBtn"+n).disabled=false;
+    $("stopBtn"+n).disabled=true;
+  };
+
+  $("playBtn"+n).onclick=()=>startPlayback(n);
+  $("stopPlayBtn"+n).onclick=()=>stopPlayback(n,true);
+
+  $("waveCanvas"+n).addEventListener("click",evt=>{
+    const tr=tracks[n];
+    if(!tr.buffer)return;
+    const c=$("waveCanvas"+n),r=c.getBoundingClientRect();
+    const x=(evt.clientX-r.left)/r.width*c.width;
+    const t=Math.max(0,Math.min(tr.buffer.duration,x/c.width*tr.buffer.duration));
+    if(selectionMode==="PLAY"){
+      setPlaybackPosition(n,t);
+    }else{
+      setPoint(selectionMode,n,t);
+    }
+  });
+}
+TRACK_IDS.forEach(setupTrackUI);
+
+function playbackTime(n){
+  const tr=tracks[n];
+  if(!tr.buffer)return 0;
+  if(!tr.isPlaying)return tr.playPos||0;
+  const ctx=getAudioContext();
+  return Math.min(tr.buffer.duration,tr.playStartOffset+(ctx.currentTime-tr.playStartCtx));
+}
+
+function updatePlayTimeText(n){
+  const tr=tracks[n];
+  if(!tr.buffer){
+    $("playTime"+n).textContent="再生位置: —";
+    return;
+  }
+  const t=Math.max(0,Math.min(tr.buffer.duration,tr.playPos||0));
+  $("playTime"+n).textContent=`再生位置: ${t.toFixed(3)} / ${tr.buffer.duration.toFixed(3)} s`;
+}
+
+function animatePlayback(n){
+  const tr=tracks[n];
+  if(!tr.isPlaying)return;
+  tr.playPos=playbackTime(n);
+  updatePlayTimeText(n);
+  drawWave(n);
+  tr.raf=requestAnimationFrame(()=>animatePlayback(n));
+}
+
+async function startPlayback(n){
+  const tr=tracks[n];
+  if(!tr.buffer)return;
+
+  if(tr.isPlaying) stopPlayback(n,true);
+  if(tr.playPos>=tr.buffer.duration-0.005) tr.playPos=0;
+
+  const ctx=getAudioContext();
+  await ctx.resume();
+
+  const src=ctx.createBufferSource();
+  src.buffer=tr.buffer;
+  src.connect(ctx.destination);
+
+  tr.source=src;
+  tr.playStartOffset=Math.max(0,tr.playPos||0);
+  tr.playStartCtx=ctx.currentTime;
+  tr.isPlaying=true;
+
+  $("playBtn"+n).disabled=true;
+  $("stopPlayBtn"+n).disabled=false;
+
+  src.start(0,tr.playStartOffset);
+  src.onended=()=>{
+    if(tr.source!==src)return;
+    tr.isPlaying=false;
+    tr.source=null;
+    tr.playPos=tr.buffer.duration;
+    if(tr.raf)cancelAnimationFrame(tr.raf);
+    tr.raf=null;
+    $("playBtn"+n).disabled=false;
+    $("stopPlayBtn"+n).disabled=true;
+    updatePlayTimeText(n);
+    drawWave(n);
+  };
+
+  animatePlayback(n);
+}
+
+function stopPlayback(n,keepPosition=true){
+  const tr=tracks[n];
+  if(tr.isPlaying && keepPosition) tr.playPos=playbackTime(n);
+  if(tr.source){
+    try{tr.source.onended=null;tr.source.stop()}catch(e){}
+    try{tr.source.disconnect()}catch(e){}
+  }
+  tr.source=null;
+  tr.isPlaying=false;
+  if(tr.raf)cancelAnimationFrame(tr.raf);
+  tr.raf=null;
+  if(tr.buffer)$("playBtn"+n).disabled=false;
+  $("stopPlayBtn"+n).disabled=true;
+  updatePlayTimeText(n);
+  drawWave(n);
+}
+
+function setPlaybackPosition(n,t){
+  const tr=tracks[n];
+  if(!tr.buffer)return;
+  const wasPlaying=tr.isPlaying;
+  if(wasPlaying)stopPlayback(n,false);
+  tr.playPos=Math.max(0,Math.min(tr.buffer.duration,t));
+  updatePlayTimeText(n);
+  drawWave(n);
+  if(wasPlaying)startPlayback(n);
+}
+
+function prepareTrack(n){
+  const tr=tracks[n],buf=tr.buffer;
+  stopPlayback(n,false);
+  tr.playPos=0;
+  clearPointsForTrack(n);
+
+  tr.mono=new Float32Array(buf.length);
+  for(let ch=0;ch<buf.numberOfChannels;ch++){
+    const d=buf.getChannelData(ch);
+    for(let i=0;i<buf.length;i++)tr.mono[i]+=d[i]/buf.numberOfChannels;
+  }
+
+  $("duration"+n).textContent=buf.duration.toFixed(2)+" s";
+  $("sampleRate"+n).textContent=buf.sampleRate+" Hz";
+  $("playBtn"+n).disabled=false;
+
+  computeF0(n);
+  buildWaveBase(n);
+  drawWave(n);
+  drawF0(n);
+  updatePlayTimeText(n);
+  drawSpectrumComparison();
+  updateHarmonics();
+  updateSpectrumLegend();
+}
+
+function clearCanvas(c){
+  const ctx=c.getContext("2d");
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.fillStyle="#fff";
+  ctx.fillRect(0,0,c.width,c.height);
+  ctx.strokeStyle="#d0d5dd";
+  ctx.strokeRect(.5,.5,c.width-1,c.height-1);
+  return ctx;
+}
+
+function drawAxes(ctx,w,h){
+  ctx.strokeStyle="#eaecf0";
+  ctx.lineWidth=1;
+  for(let i=1;i<4;i++){
+    const y=h*i/4;
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(w,y);
+    ctx.stroke();
+  }
+}
+
+function buildWaveBase(n){
+  const tr=tracks[n];
+  const visible=$("waveCanvas"+n);
+  const c=document.createElement("canvas");
+  c.width=visible.width;c.height=visible.height;
+  const ctx=clearCanvas(c),w=c.width,h=c.height;
+  drawAxes(ctx,w,h);
+
+  if(!tr.mono||!tr.buffer){
+    tr.waveBase=c;
+    return;
+  }
+
+  const mono=tr.mono,buf=tr.buffer,spp=mono.length/w;
+  ctx.strokeStyle="#667085";
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let x=0;x<w;x++){
+    const a=Math.floor(x*spp),b=Math.min(mono.length,Math.floor((x+1)*spp));
+    let min=1,max=-1;
+    for(let i=a;i<b;i++){
+      const v=mono[i];
+      if(v<min)min=v;
+      if(v>max)max=v;
+    }
+    ctx.moveTo(x,h/2-min*h*.42);
+    ctx.lineTo(x,h/2-max*h*.42);
+  }
+  ctx.stroke();
+
+  const sr=buf.sampleRate;
+  const win=Math.max(32,Math.floor(sr*.02));
+  const hop=Math.max(16,Math.floor(sr*.01));
+  const env=[];
+  let maxR=1e-9;
+  for(let s=0;s<mono.length;s+=hop){
+    let ss=0,cnt=0,end=Math.min(mono.length,s+win);
+    for(let i=s;i<end;i++){ss+=mono[i]*mono[i];cnt++}
+    const rms=Math.sqrt(ss/Math.max(1,cnt));
+    env.push([s/sr,rms]);
+    if(rms>maxR)maxR=rms;
+  }
+
+  ctx.strokeStyle="#2563eb";
+  ctx.lineWidth=2.2;
+  ctx.beginPath();
+  env.forEach(([t,r],i)=>{
+    const x=t/buf.duration*w;
+    const y=h-10-r/maxR*(h-20);
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+  tr.waveBase=c;
+}
+
+function drawWave(n){
+  const tr=tracks[n],c=$("waveCanvas"+n),ctx=clearCanvas(c),w=c.width,h=c.height;
+  if(tr.waveBase)ctx.drawImage(tr.waveBase,0,0);
+
+  if(!tr.buffer)return;
+
+  for(const label of ["A","B","C"]){
+    const p=points[label];
+    if(p.track!==n||p.time==null)continue;
+    const x=p.time/tr.buffer.duration*w;
+    ctx.strokeStyle=pointStyle(label);
+    ctx.setLineDash([]);
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,h);
+    ctx.stroke();
+  }
+
+  const playX=(tr.playPos||0)/tr.buffer.duration*w;
+  ctx.strokeStyle="#111827";
+  ctx.setLineDash([6,5]);
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(playX,0);
+  ctx.lineTo(playX,h);
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function autocorrelationF0(data,sr,start,size){
+  const end=Math.min(data.length,start+size),len=end-start;
+  if(len<256)return null;
+  let mean=0;
+  for(let i=start;i<end;i++)mean+=data[i];
+  mean/=len;
+
+  let rms=0;
+  const x=new Float32Array(len);
+  for(let i=0;i<len;i++){
+    x[i]=data[start+i]-mean;
+    rms+=x[i]*x[i];
+  }
+  rms=Math.sqrt(rms/len);
+  if(rms<.008)return null;
+
+  const minHz=70,maxHz=700;
+  const minLag=Math.floor(sr/maxHz);
+  const maxLag=Math.min(len-2,Math.floor(sr/minHz));
+  let bestLag=-1,best=-1;
+
+  for(let lag=minLag;lag<=maxLag;lag++){
+    let num=0,a=0,b=0,m=len-lag;
+    for(let i=0;i<m;i++){
+      const u=x[i],v=x[i+lag];
+      num+=u*v;a+=u*u;b+=v*v;
+    }
+    const corr=num/Math.sqrt(a*b+1e-12);
+    if(corr>best){best=corr;bestLag=lag}
+  }
+  if(best<.55||bestLag<0)return null;
+  return sr/bestLag;
+}
+
+function computeF0(n){
+  const tr=tracks[n],sr=tr.buffer.sampleRate;
+  const win=Math.floor(sr*.06),hop=Math.floor(sr*.02);
+  tr.f0=[];
+  for(let s=0;s+win<tr.mono.length;s+=hop){
+    tr.f0.push([s/sr,autocorrelationF0(tr.mono,sr,s,win)]);
+  }
+}
+
+function drawF0(n){
+  const tr=tracks[n],c=$("f0Canvas"+n),ctx=clearCanvas(c),w=c.width,h=c.height;
+  drawAxes(ctx,w,h);
+  if(!tr.buffer)return;
+
+  const minF=70,maxF=700;
+  ctx.strokeStyle="#2563eb";
+  ctx.lineWidth=1.7;
+  let pen=false;
+  ctx.beginPath();
+  for(const [t,f] of tr.f0){
+    if(!f||f<minF||f>maxF){pen=false;continue}
+    const x=t/tr.buffer.duration*w;
+    const y=h-10-Math.log(f/minF)/Math.log(maxF/minF)*(h-20);
+    if(!pen){ctx.moveTo(x,y);pen=true}else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  for(const label of ["A","B","C"]){
+    const p=points[label];
+    if(p.track!==n||p.time==null)continue;
+    const x=p.time/tr.buffer.duration*w;
+    ctx.strokeStyle=pointStyle(label);
+    ctx.beginPath();
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,h);
+    ctx.stroke();
+  }
+}
+
+function nearestF0(n,t){
+  let best=null,dist=Infinity;
+  for(const [tt,f] of tracks[n].f0){
+    if(!f)continue;
+    const d=Math.abs(tt-t);
+    if(d<dist){dist=d;best=f}
+  }
+  return best;
+}
+
+function hann(i,N){
+  return .5*(1-Math.cos(2*Math.PI*i/(N-1)));
+}
+
+function fft(re,im){
+  const n=re.length;
+  for(let i=1,j=0;i<n;i++){
+    let bit=n>>1;
+    for(;j&bit;bit>>=1)j^=bit;
+    j^=bit;
+    if(i<j){
+      [re[i],re[j]]=[re[j],re[i]];
+      [im[i],im[j]]=[im[j],im[i]];
+    }
+  }
+  for(let len=2;len<=n;len<<=1){
+    const ang=-2*Math.PI/len,wc=Math.cos(ang),ws=Math.sin(ang);
+    for(let i=0;i<n;i+=len){
+      let cr=1,ci=0;
+      for(let j=0;j<len/2;j++){
+        const ur=re[i+j],ui=im[i+j],k=i+j+len/2;
+        const vr=re[k]*cr-im[k]*ci,vi=re[k]*ci+im[k]*cr;
+        re[i+j]=ur+vr;im[i+j]=ui+vi;
+        re[k]=ur-vr;im[k]=ui-vi;
+        const nr=cr*wc-ci*ws;
+        ci=cr*ws+ci*wc;cr=nr;
+      }
+    }
+  }
+}
+
+function buildSpectrum(n,t){
+  const tr=tracks[n],sr=tr.buffer.sampleRate;
+  let N=8192;
+  while(N>2048&&N>tr.mono.length)N>>=1;
+
+  const center=Math.floor(t*sr);
+  const start=Math.max(0,Math.min(Math.max(0,tr.mono.length-N),center-Math.floor(N/2)));
+  const re=new Float64Array(N),im=new Float64Array(N);
+
+  let mean=0;
+  for(let i=0;i<N;i++)mean+=tr.mono[start+i]||0;
+  mean/=N;
+
+  for(let i=0;i<N;i++)re[i]=((tr.mono[start+i]||0)-mean)*hann(i,N);
+  fft(re,im);
+
+  const mags=new Float64Array(N/2);
+  let maxMag=1e-12;
+  for(let k=1;k<N/2;k++){
+    const m=Math.hypot(re[k],im[k]);
+    mags[k]=m;
+    if(m>maxMag)maxMag=m;
+  }
+  return {mags,sr,N,maxMag,f0:nearestF0(n,t)};
+}
+
+function setPoint(label,n,t){
+  const p=points[label];
+  p.track=n;
+  p.time=Math.max(0,Math.min(tracks[n].buffer.duration,t));
+  p.spectrum=buildSpectrum(n,p.time);
+
+  $("cursorTime"+label).textContent=p.time.toFixed(3)+" s";
+  $("cursorF0"+label).textContent="F0: "+(p.spectrum.f0?p.spectrum.f0.toFixed(1)+" Hz":"—");
+  $("cursorTrack"+label).textContent="録音: "+n;
+
+  TRACK_IDS.forEach(drawWave);
+  TRACK_IDS.forEach(drawF0);
+  drawSpectrumComparison();
+  updateHarmonics();
+  updateSpectrumLegend();
+}
 
 function requestedFrequencyLimit(){
   if(maxFrequencySetting==="max"){
     let nyq=0;
     for(const label of ["A","B","C"]){
       const sp=points[label].spectrum;
-      if(sp) nyq=Math.max(nyq,sp.sr/2);
+      if(sp)nyq=Math.max(nyq,sp.sr/2);
     }
     if(!nyq){
-      for(const n of [1,2]) if(tracks[n].buffer) nyq=Math.max(nyq,tracks[n].buffer.sampleRate/2);
+      for(const n of TRACK_IDS){
+        if(tracks[n].buffer)nyq=Math.max(nyq,tracks[n].buffer.sampleRate/2);
+      }
     }
-    return nyq || 5000;
+    return nyq||5000;
   }
   return Number(maxFrequencySetting);
 }
+
 function effectiveFrequencyLimit(){
-  let req=requestedFrequencyLimit(), maxNyq=0;
+  const req=requestedFrequencyLimit();
+  let maxNyq=0;
   for(const label of ["A","B","C"]){
     const sp=points[label].spectrum;
-    if(sp) maxNyq=Math.max(maxNyq,sp.sr/2);
+    if(sp)maxNyq=Math.max(maxNyq,sp.sr/2);
   }
   if(!maxNyq){
-    for(const n of [1,2]) if(tracks[n].buffer) maxNyq=Math.max(maxNyq,tracks[n].buffer.sampleRate/2);
+    for(const n of TRACK_IDS){
+      if(tracks[n].buffer)maxNyq=Math.max(maxNyq,tracks[n].buffer.sampleRate/2);
+    }
   }
-  return maxNyq ? Math.min(req,maxNyq) : req;
+  return maxNyq?Math.min(req,maxNyq):req;
 }
+
 function updateSpectrumLegend(){
   const el=$("spectrumLegend");
-  let parts=[];
+  const parts=[];
   for(const label of ["A","B","C"]){
     const p=points[label];
-    if(p.track==null||p.time==null) continue;
+    if(p.track==null||p.time==null)continue;
     parts.push(`<span class="legend-item"><span class="swatch swatch-${label.toLowerCase()}"></span><strong>${label}</strong>: 録音${p.track} / ${p.time.toFixed(3)} s</span>`);
   }
   el.innerHTML=parts.length?parts.join(""):'<span class="status">A/B/Cはまだ指定されていません。</span>';
 }
+
 $("maxFreqSelect").addEventListener("change",e=>{
   maxFrequencySetting=e.target.value==="max"?"max":Number(e.target.value);
-  drawSpectrumComparison();updateHarmonics();updateSpectrumLegend();
+  drawSpectrumComparison();
+  updateHarmonics();
+  updateSpectrumLegend();
 });
-function drawSpectrumComparison(){
-  const c=$("spectrumCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;
-  drawAxes(ctx,w,h);
-  const maxHz=effectiveFrequencyLimit();
-  $("actualFreqLimit").textContent="実際の上限: "+(maxHz>=1000?(maxHz/1000).toFixed(maxHz%1000===0?0:1)+" kHz":Math.round(maxHz)+" Hz");
+
+function renderSpectrumPlot(ctx,x0,y0,w,h,maxHz,withTicks=false){
+  ctx.save();
+  ctx.fillStyle="#fff";
+  ctx.fillRect(x0,y0,w,h);
+  ctx.strokeStyle="#d0d5dd";
+  ctx.strokeRect(x0+.5,y0+.5,w-1,h-1);
+
+  ctx.strokeStyle="#eaecf0";
+  ctx.lineWidth=1;
+  for(let i=1;i<4;i++){
+    const y=y0+h*i/4;
+    ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x0+w,y);ctx.stroke();
+  }
 
   for(const label of ["A","B","C"]){
-    const sp=points[label].spectrum;if(!sp)continue;
+    const sp=points[label].spectrum;
+    if(!sp)continue;
     const effectiveMax=Math.min(maxHz,sp.sr/2);
     const maxK=Math.min(sp.mags.length-1,Math.floor(effectiveMax*sp.N/sp.sr));
-    ctx.strokeStyle=pointStyle(label);ctx.lineWidth=1.4;ctx.beginPath();
+    ctx.strokeStyle=pointStyle(label);
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    let started=false;
     for(let k=1;k<=maxK;k++){
-      const hz=k*sp.sr/sp.N,x=hz/maxHz*w;
+      const hz=k*sp.sr/sp.N;
+      const x=x0+hz/maxHz*w;
       let db=20*Math.log10((sp.mags[k]+1e-12)/sp.maxMag);
       db=Math.max(-70,Math.min(0,db));
-      const y=10+(-db/70)*(h-20);
-      if(k===1)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+      const y=y0+10+(-db/70)*(h-20);
+      if(!started){ctx.moveTo(x,y);started=true}else ctx.lineTo(x,y);
     }
     ctx.stroke();
   }
+
+  if(withTicks){
+    ctx.fillStyle="#475467";
+    ctx.font="20px system-ui";
+    ctx.textAlign="center";
+    for(let i=0;i<=4;i++){
+      const hz=maxHz*i/4;
+      const x=x0+w*i/4;
+      ctx.fillText(hz>=1000?`${(hz/1000).toFixed(hz%1000===0?0:1)}k`:Math.round(hz),x,y0+h+32);
+    }
+    ctx.textAlign="right";
+    for(const db of [0,-20,-40,-60]){
+      const y=y0+10+(-db/70)*(h-20);
+      ctx.fillText(`${db}`,x0-14,y+7);
+    }
+  }
+  ctx.restore();
+}
+
+function drawSpectrumComparison(){
+  const c=$("spectrumCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;
+  const maxHz=effectiveFrequencyLimit();
+  $("actualFreqLimit").textContent="実際の上限: "+(maxHz>=1000?(maxHz/1000).toFixed(maxHz%1000===0?0:1)+" kHz":Math.round(maxHz)+" Hz");
+  renderSpectrumPlot(ctx,0,0,w,h,maxHz,false);
   updateSpectrumLegend();
 }
-function harmonicInfo(sp,h){if(!sp||!sp.f0)return null;const target=sp.f0*h;if(target>effectiveFrequencyLimit()||target>=sp.sr/2)return null;const k0=Math.round(target*sp.N/sp.sr),radius=Math.max(2,Math.round(25*sp.N/sp.sr));let bestK=k0,bestM=0;for(let k=Math.max(1,k0-radius);k<=Math.min(sp.mags.length-1,k0+radius);k++){if(sp.mags[k]>bestM){bestM=sp.mags[k];bestK=k}}return {hz:bestK*sp.sr/sp.N,db:20*Math.log10((bestM+1e-12)/sp.maxMag)}}
-function maxHarmonicNumber(sp){if(!sp||!sp.f0)return 0;return Math.floor(Math.min(effectiveFrequencyLimit(),sp.sr/2)/sp.f0)}
 
-function spectralTiltDbPerOctave(sp){
+function harmonicInfo(sp,h){
   if(!sp||!sp.f0)return null;
-  const maxH=maxHarmonicNumber(sp);
-  let xs=[],ys=[];
-  for(let h=1;h<=maxH;h++){
-    const info=harmonicInfo(sp,h);
-    if(!info)continue;
-    // Ignore extremely weak peaks that are more likely to be noise-floor dominated.
-    if(info.db < -60)continue;
-    xs.push(Math.log2(info.hz/sp.f0));
-    ys.push(info.db);
+  const target=sp.f0*h;
+  if(target>effectiveFrequencyLimit()||target>=sp.sr/2)return null;
+  const k0=Math.round(target*sp.N/sp.sr);
+  const radius=Math.max(2,Math.round(25*sp.N/sp.sr));
+  let bestK=k0,bestM=0;
+  for(let k=Math.max(1,k0-radius);k<=Math.min(sp.mags.length-1,k0+radius);k++){
+    if(sp.mags[k]>bestM){bestM=sp.mags[k];bestK=k}
   }
-  if(xs.length<4)return null;
-  const mx=xs.reduce((a,b)=>a+b,0)/xs.length;
-  const my=ys.reduce((a,b)=>a+b,0)/ys.length;
-  let num=0,den=0;
-  for(let i=0;i<xs.length;i++){
-    const dx=xs[i]-mx;
-    num+=dx*(ys[i]-my);
-    den+=dx*dx;
-  }
-  if(!den)return null;
-  return num/den;
+  return {
+    hz:bestK*sp.sr/sp.N,
+    db:20*Math.log10((bestM+1e-12)/sp.maxMag)
+  };
+}
+
+function maxHarmonicNumber(sp){
+  if(!sp||!sp.f0)return 0;
+  return Math.floor(Math.min(effectiveFrequencyLimit(),sp.sr/2)/sp.f0);
 }
 
 function spectralTiltDbPerOctave(sp){
@@ -312,6 +887,7 @@ function spectralTiltDbPerOctave(sp){
     ys.push(info.db);
   }
   if(xs.length<4)return null;
+
   const mx=xs.reduce((a,b)=>a+b,0)/xs.length;
   const my=ys.reduce((a,b)=>a+b,0)/ys.length;
   let num=0,den=0;
@@ -337,31 +913,24 @@ function summarize(label){
     const info=harmonicInfo(sp,h);
     if(!info)continue;
     if(info.db>=-30)c30++;
-    if(info.db>=-40){c40++;highest40=h;}
+    if(info.db>=-40){c40++;highest40=h}
     if(info.db>=-50)c50++;
   }
 
   $("count"+label).textContent=`${c30} / ${c40} / ${c50}`;
   $("highest"+label).textContent="−40 dB以上の最高倍音: "+(highest40?`H${highest40}`:"—");
-
   const tilt=spectralTiltDbPerOctave(sp);
   $("tilt"+label).textContent="スペクトル傾斜: "+(tilt==null?"—":`${tilt.toFixed(1)} dB/oct`);
 }
 
 function updateHarmonics(){
-  summarize("A");
-  summarize("B");
-  summarize("C");
+  summarize("A");summarize("B");summarize("C");
 
-  const maxH=Math.max(
-    10,
-    ...["A","B","C"].map(k=>maxHarmonicNumber(points[k].spectrum))
-  );
+  const maxH=Math.max(10,...["A","B","C"].map(k=>maxHarmonicNumber(points[k].spectrum)));
   const displayMax=showAllHarmonics?maxH:Math.min(10,maxH);
   const threshold=harmonicFilter==="all"?null:Number(harmonicFilter);
 
   let rows="";
-
   for(let h=1;h<=displayMax;h++){
     const infos={};
     let rowVisible=(threshold===null);
@@ -369,20 +938,14 @@ function updateHarmonics(){
     for(const label of ["A","B","C"]){
       const info=harmonicInfo(points[label].spectrum,h);
       infos[label]=info;
-      if(threshold!==null && info && info.db>=threshold){
-        rowVisible=true;
-      }
+      if(threshold!==null&&info&&info.db>=threshold)rowVisible=true;
     }
-
-    // If a threshold is active, omit a harmonic row only when A/B/C are all below threshold.
     if(!rowVisible)continue;
 
     let cells="";
     for(const label of ["A","B","C"]){
       const info=infos[label];
-      if(!info){
-        cells+="<td>—</td>";
-      }else if(threshold!==null && info.db<threshold){
+      if(!info||threshold!==null&&info.db<threshold){
         cells+="<td>—</td>";
       }else{
         cells+=`<td>${info.hz.toFixed(0)} Hz / ${info.db.toFixed(1)} dB</td>`;
@@ -392,9 +955,7 @@ function updateHarmonics(){
   }
 
   if(!rows){
-    const msg=(threshold===null)
-      ?"A/B/Cの地点を指定してください。"
-      :"この閾値以上の倍音はありません。";
+    const msg=threshold===null?"A/B/Cの地点を指定してください。":"この閾値以上の倍音はありません。";
     rows=`<tr><td colspan="4" style="text-align:center;color:#667085">${msg}</td></tr>`;
   }
 
@@ -412,9 +973,84 @@ $("harmonicFilter").addEventListener("change",e=>{
   updateHarmonics();
 });
 
-window.loadSeparatedVocalsIntoTrack = function(trackNumber,left,right,sampleRate){
+function saveSpectrumPng(){
+  const hasData=["A","B","C"].some(k=>points[k].spectrum);
+  if(!hasData){
+    alert("先にA/B/Cの解析地点を指定してください。");
+    return;
+  }
+
+  const out=document.createElement("canvas");
+  out.width=1600;
+  out.height=900;
+  const ctx=out.getContext("2d");
+
+  ctx.fillStyle="#fff";
+  ctx.fillRect(0,0,out.width,out.height);
+
+  ctx.fillStyle="#101828";
+  ctx.font="bold 34px system-ui";
+  ctx.fillText("周波数スペクトル比較",80,62);
+
+  const maxHz=effectiveFrequencyLimit();
+  ctx.fillStyle="#667085";
+  ctx.font="20px system-ui";
+  ctx.fillText(`周波数上限: ${maxHz>=1000?(maxHz/1000).toFixed(maxHz%1000===0?0:1)+" kHz":Math.round(maxHz)+" Hz"}　各地点の最大ピーク = 0 dB`,80,100);
+
+  let lx=80;
+  const ly=145;
+  for(const label of ["A","B","C"]){
+    const p=points[label];
+    if(!p.spectrum)continue;
+    ctx.strokeStyle=pointStyle(label);
+    ctx.lineWidth=5;
+    ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+32,ly);ctx.stroke();
+    ctx.fillStyle="#344054";
+    ctx.font="20px system-ui";
+    const f0=p.spectrum.f0?` / F0 ${p.spectrum.f0.toFixed(1)} Hz`:"";
+    const txt=`${label}: 録音${p.track} / ${p.time.toFixed(3)} s${f0}`;
+    ctx.fillText(txt,lx+42,ly+7);
+    lx+=ctx.measureText(txt).width+100;
+  }
+
+  const px=145,py=200,pw=1370,ph=520;
+  renderSpectrumPlot(ctx,px,py,pw,ph,maxHz,true);
+
+  ctx.fillStyle="#344054";
+  ctx.font="24px system-ui";
+  ctx.textAlign="center";
+  ctx.fillText("周波数 (Hz)",px+pw/2,790);
+
+  ctx.save();
+  ctx.translate(48,py+ph/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText("相対強度 (dB)",0,0);
+  ctx.restore();
+  ctx.textAlign="left";
+
+  ctx.fillStyle="#667085";
+  ctx.font="18px system-ui";
+  ctx.fillText("歌唱音響分析器 v0.8.0",80,860);
+
+  out.toBlob(blob=>{
+    if(!blob)return;
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    const d=new Date();
+    const pad=x=>String(x).padStart(2,"0");
+    a.download=`singing_spectrum_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.png`;
+    a.href=url;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  },"image/png");
+}
+$("saveSpectrumPng").onclick=saveSpectrumPng;
+
+window.loadSeparatedVocalsIntoTrack=function(trackNumber,left,right,sampleRate){
   const n=Number(trackNumber);
-  if(!tracks[n]) throw new Error("Invalid track number");
+  if(!tracks[n])throw new Error("Invalid track number");
   const length=Math.min(left.length,right.length);
   const ctx=getAudioContext();
   const buf=ctx.createBuffer(2,length,sampleRate);
@@ -425,10 +1061,10 @@ window.loadSeparatedVocalsIntoTrack = function(trackNumber,left,right,sampleRate
   $("status"+n).textContent="ボーカル抽出音声を読み込みました（44.1 kHz）。";
 };
 
-setSelectedPoint("A");
+setSelectionMode("A");
 updateSpectrumLegend();
 drawSpectrumComparison();
-
+TRACK_IDS.forEach(updatePlayTimeText);
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.0/dist/ort.webgpu.min.js"></script>
