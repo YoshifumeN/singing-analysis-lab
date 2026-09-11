@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.4</title>
+<title>歌唱音響分析器 v0.5</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -27,11 +27,17 @@ table{width:100%;border-collapse:collapse;margin-top:8px}
 th,td{padding:7px 8px;border-bottom:1px solid #eaecf0;text-align:right}
 th:first-child,td:first-child{text-align:left}
 .row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1 1 320px}
+.graph-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.86rem;color:var(--muted);margin:4px 2px 6px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.9rem;color:var(--muted);margin:8px 0}
+.legend-item{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:18px;height:3px;border-radius:2px;display:inline-block}
+.swatch-a{background:#d92d20}.swatch-b{background:#039855}.swatch-c{background:#7a5af8}
+select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 9px}
 </style>
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.4</h1>
+<h1>歌唱音響分析器 v0.5</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 <section class="panel">
@@ -65,7 +71,17 @@ th:first-child,td:first-child{text-align:left}
 
 <section class="panel">
 <div class="section-title">2. 波形＋音量包絡</div>
-<div class="controls" style="margin-bottom:10px"><button id="selectA" class="primary">地点Aを選択</button><button id="selectB">地点Bを選択</button><button id="selectC">地点Cを選択</button></div>
+<div class="controls" style="margin-bottom:8px">
+<button id="selectA" class="primary">地点Aを選択</button>
+<button id="selectB">地点Bを選択</button>
+<button id="selectC">地点Cを選択</button>
+<button id="selectOff">地点選択 OFF</button>
+</div>
+<div class="controls" style="margin-bottom:10px">
+<button id="clearA">Aを解除</button>
+<button id="clearB">Bを解除</button>
+<button id="clearC">Cを解除</button>
+</div>
 <div style="margin-bottom:14px"><div class="hint" style="margin-bottom:4px"><strong>録音 1</strong></div><canvas id="waveCanvas1" width="1000" height="220"></canvas></div>
 <div><div class="hint" style="margin-bottom:4px"><strong>録音 2</strong></div><canvas id="waveCanvas2" width="1000" height="220"></canvas></div>
 <p class="hint"><strong>横軸：</strong>時間（秒）　<strong>縦軸：</strong>相対振幅／相対音量。灰色＝瞬間的な音圧の波形、青＝20 ms窓で計算したRMS音量包絡。A/B/Cのいずれかを選んでから、録音1または録音2の波形をクリックすると、その地点を比較対象として登録します。</p>
@@ -80,8 +96,21 @@ th:first-child,td:first-child{text-align:left}
 
 <section class="panel">
 <div class="section-title">4. A / B / C の周波数スペクトル比較</div>
+<div class="controls" style="margin-bottom:6px">
+<label for="maxFreqSelect">表示・倍音解析の上限：</label>
+<select id="maxFreqSelect">
+  <option value="5000">5 kHz</option>
+  <option value="10000">10 kHz</option>
+  <option value="15000">15 kHz</option>
+  <option value="20000">20 kHz</option>
+  <option value="max">利用可能最大（Nyquist）</option>
+</select>
+<span id="actualFreqLimit" class="status"></span>
+</div>
+<div id="spectrumLegend" class="legend"></div>
+<div class="graph-meta"><span>縦軸：相対強度（dB、各地点の最大ピーク＝0 dB）</span><span>横軸：周波数（Hz）</span></div>
 <canvas id="spectrumCanvas" width="1000" height="220"></canvas>
-<p class="hint"><strong>横軸：</strong>周波数（Hz）　<strong>縦軸：</strong>各地点ごとに最大ピークを0 dBとした相対強度（dB）。A/B/Cを重ね描きします。選択地点を中心に短区間FFTを行い、表示上限は5 kHzです。<strong>このスペクトルのうち、F0・2F0・3F0…付近の山を抜き出したものが下の「5. 倍音構造」です。</strong></p>
+<p class="hint"><strong>横軸：</strong>周波数（Hz）　<strong>縦軸：</strong>各地点ごとに最大ピークを0 dBとした相対強度（dB）。A/B/Cを重ね描きします。選択地点を中心に短区間FFTを行います。表示・倍音解析の上限は上のメニューで変更できます。<strong>このスペクトルのうち、F0・2F0・3F0…付近の山を抜き出したものが下の「5. 倍音構造」です。</strong></p>
 </section>
 
 <section class="panel">
@@ -93,7 +122,7 @@ th:first-child,td:first-child{text-align:left}
 </div>
 <div class="controls" style="margin-top:12px"><button id="toggleHarmonics">H11以降も表示</button></div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。5 kHzまでの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.4では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.5では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
@@ -127,9 +156,70 @@ function nearestF0(n,t){let best=null,dist=Infinity;for(const [tt,f] of tracks[n
 function hann(i,N){return .5*(1-Math.cos(2*Math.PI*i/(N-1)))}
 function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}}for(let len=2;len<=n;len<<=1){const ang=-2*Math.PI/len,wc=Math.cos(ang),ws=Math.sin(ang);for(let i=0;i<n;i+=len){let cr=1,ci=0;for(let j=0;j<len/2;j++){const ur=re[i+j],ui=im[i+j],k=i+j+len/2,vr=re[k]*cr-im[k]*ci,vi=re[k]*ci+im[k]*cr;re[i+j]=ur+vr;im[i+j]=ui+vi;re[k]=ur-vr;im[k]=ui-vi;const nr=cr*wc-ci*ws;ci=cr*ws+ci*wc;cr=nr}}}}
 function buildSpectrum(n,t){const tr=tracks[n],sr=tr.buffer.sampleRate;let N=8192;while(N>2048&&N>tr.mono.length)N>>=1;const center=Math.floor(t*sr),start=Math.max(0,Math.min(Math.max(0,tr.mono.length-N),center-Math.floor(N/2))),re=new Float64Array(N),im=new Float64Array(N);let mean=0;for(let i=0;i<N;i++)mean+=tr.mono[start+i]||0;mean/=N;for(let i=0;i<N;i++)re[i]=((tr.mono[start+i]||0)-mean)*hann(i,N);fft(re,im);const mags=new Float64Array(N/2);let maxMag=1e-12;for(let k=1;k<N/2;k++){const m=Math.hypot(re[k],im[k]);mags[k]=m;if(m>maxMag)maxMag=m}return {mags,sr,N,maxMag,f0:nearestF0(n,t)}}
-function setPoint(label,n,t){const p=points[label];p.track=n;p.time=Math.max(0,Math.min(tracks[n].buffer.duration,t));p.spectrum=buildSpectrum(n,p.time);$("cursorTime"+label).textContent=p.time.toFixed(3)+" s";$("cursorF0"+label).textContent="F0: "+(p.spectrum.f0?p.spectrum.f0.toFixed(1)+" Hz":"—");$("cursorTrack"+label).textContent="録音: "+n;drawWave(1);drawWave(2);drawF0(1);drawF0(2);drawSpectrumComparison();updateHarmonics()}
-function drawSpectrumComparison(){const c=$("spectrumCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;drawAxes(ctx,w,h);const maxHz=5000;for(const label of ["A","B","C"]){const sp=points[label].spectrum;if(!sp)continue;const effectiveMax=Math.min(maxHz,sp.sr/2),maxK=Math.min(sp.mags.length-1,Math.floor(effectiveMax*sp.N/sp.sr));ctx.strokeStyle=pointStyle(label);ctx.lineWidth=1.4;ctx.beginPath();for(let k=1;k<=maxK;k++){const hz=k*sp.sr/sp.N,x=hz/maxHz*w;let db=20*Math.log10((sp.mags[k]+1e-12)/sp.maxMag);db=Math.max(-70,Math.min(0,db));const y=10+(-db/70)*(h-20);if(k===1)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.stroke()}ctx.fillStyle="#667085";ctx.font="12px system-ui";ctx.fillText("0 Hz",32,h-6);ctx.fillText("5000 Hz",w-65,h-6);ctx.fillText("0 dB",6,14);ctx.fillText("-70 dB",6,h-20);ctx.fillText("周波数 (Hz)",w/2-35,h-6);ctx.save();ctx.translate(13,h/2+25);ctx.rotate(-Math.PI/2);ctx.fillText("相対強度 (dB)",0,0);ctx.restore();let lx=w-125,ly=16;for(const label of ["A","B","C"]){ctx.strokeStyle=pointStyle(label);ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+18,ly);ctx.stroke();ctx.fillStyle="#667085";ctx.fillText(label,lx+24,ly+4);ly+=18}}
-function harmonicInfo(sp,h){if(!sp||!sp.f0)return null;const target=sp.f0*h;if(target>5000||target>=sp.sr/2)return null;const k0=Math.round(target*sp.N/sp.sr),radius=Math.max(2,Math.round(25*sp.N/sp.sr));let bestK=k0,bestM=0;for(let k=Math.max(1,k0-radius);k<=Math.min(sp.mags.length-1,k0+radius);k++){if(sp.mags[k]>bestM){bestM=sp.mags[k];bestK=k}}return {hz:bestK*sp.sr/sp.N,db:20*Math.log10((bestM+1e-12)/sp.maxMag)}}
+function setPoint(label,n,t){const p=points[label];p.track=n;p.time=Math.max(0,Math.min(tracks[n].buffer.duration,t));p.spectrum=buildSpectrum(n,p.time);$("cursorTime"+label).textContent=p.time.toFixed(3)+" s";$("cursorF0"+label).textContent="F0: "+(p.spectrum.f0?p.spectrum.f0.toFixed(1)+" Hz":"—");$("cursorTrack"+label).textContent="録音: "+n;drawWave(1);drawWave(2);drawF0(1);drawF0(2);drawSpectrumComparison();updateHarmonics();updateSpectrumLegend()}
+
+function requestedFrequencyLimit(){
+  if(maxFrequencySetting==="max"){
+    let nyq=0;
+    for(const label of ["A","B","C"]){
+      const sp=points[label].spectrum;
+      if(sp) nyq=Math.max(nyq,sp.sr/2);
+    }
+    if(!nyq){
+      for(const n of [1,2]) if(tracks[n].buffer) nyq=Math.max(nyq,tracks[n].buffer.sampleRate/2);
+    }
+    return nyq || 5000;
+  }
+  return Number(maxFrequencySetting);
+}
+function effectiveFrequencyLimit(){
+  let req=requestedFrequencyLimit(), maxNyq=0;
+  for(const label of ["A","B","C"]){
+    const sp=points[label].spectrum;
+    if(sp) maxNyq=Math.max(maxNyq,sp.sr/2);
+  }
+  if(!maxNyq){
+    for(const n of [1,2]) if(tracks[n].buffer) maxNyq=Math.max(maxNyq,tracks[n].buffer.sampleRate/2);
+  }
+  return maxNyq ? Math.min(req,maxNyq) : req;
+}
+function updateSpectrumLegend(){
+  const el=$("spectrumLegend");
+  let parts=[];
+  for(const label of ["A","B","C"]){
+    const p=points[label];
+    if(p.track==null||p.time==null) continue;
+    parts.push(`<span class="legend-item"><span class="swatch swatch-${label.toLowerCase()}"></span><strong>${label}</strong>: 録音${p.track} / ${p.time.toFixed(3)} s</span>`);
+  }
+  el.innerHTML=parts.length?parts.join(""):'<span class="status">A/B/Cはまだ指定されていません。</span>';
+}
+$("maxFreqSelect").addEventListener("change",e=>{
+  maxFrequencySetting=e.target.value==="max"?"max":Number(e.target.value);
+  drawSpectrumComparison();updateHarmonics();
+});
+function drawSpectrumComparison(){
+  const c=$("spectrumCanvas"),ctx=clearCanvas(c),w=c.width,h=c.height;
+  drawAxes(ctx,w,h);
+  const maxHz=effectiveFrequencyLimit();
+  $("actualFreqLimit").textContent="実際の上限: "+(maxHz>=1000?(maxHz/1000).toFixed(maxHz%1000===0?0:1)+" kHz":Math.round(maxHz)+" Hz");
+
+  for(const label of ["A","B","C"]){
+    const sp=points[label].spectrum;if(!sp)continue;
+    const effectiveMax=Math.min(maxHz,sp.sr/2);
+    const maxK=Math.min(sp.mags.length-1,Math.floor(effectiveMax*sp.N/sp.sr));
+    ctx.strokeStyle=pointStyle(label);ctx.lineWidth=1.4;ctx.beginPath();
+    for(let k=1;k<=maxK;k++){
+      const hz=k*sp.sr/sp.N,x=hz/maxHz*w;
+      let db=20*Math.log10((sp.mags[k]+1e-12)/sp.maxMag);
+      db=Math.max(-70,Math.min(0,db));
+      const y=10+(-db/70)*(h-20);
+      if(k===1)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  updateSpectrumLegend();
+}
+function harmonicInfo(sp,h){if(!sp||!sp.f0)return null;const target=sp.f0*h;if(target>effectiveFrequencyLimit()||target>=sp.sr/2)return null;const k0=Math.round(target*sp.N/sp.sr),radius=Math.max(2,Math.round(25*sp.N/sp.sr));let bestK=k0,bestM=0;for(let k=Math.max(1,k0-radius);k<=Math.min(sp.mags.length-1,k0+radius);k++){if(sp.mags[k]>bestM){bestM=sp.mags[k];bestK=k}}return {hz:bestK*sp.sr/sp.N,db:20*Math.log10((bestM+1e-12)/sp.maxMag)}}
 function maxHarmonicNumber(sp){if(!sp||!sp.f0)return 0;return Math.floor(Math.min(5000,sp.sr/2)/sp.f0)}
 function summarize(label){const sp=points[label].spectrum;if(!sp||!sp.f0){$("count"+label).textContent="—";$("highest"+label).textContent="最高倍音: —";return}let c30=0,c40=0,c50=0,highest40=0;for(let h=1;h<=maxHarmonicNumber(sp);h++){const info=harmonicInfo(sp,h);if(!info)continue;if(info.db>=-30)c30++;if(info.db>=-40){c40++;highest40=h}if(info.db>=-50)c50++}$("count"+label).textContent=`${c30} / ${c40} / ${c50}`;$("highest"+label).textContent="−40 dB以上の最高倍音: H"+(highest40||"—")}
 function updateHarmonics(){summarize("A");summarize("B");summarize("C");const maxH=Math.max(10,...["A","B","C"].map(k=>maxHarmonicNumber(points[k].spectrum))),displayMax=showAllHarmonics?maxH:Math.min(10,maxH);let rows="";for(let h=1;h<=displayMax;h++){let cells="";for(const label of ["A","B","C"]){const info=harmonicInfo(points[label].spectrum,h);cells+=`<td>${info?info.hz.toFixed(0)+" Hz / "+info.db.toFixed(1)+" dB":"—"}</td>`}rows+=`<tr><td>H${h}</td>${cells}</tr>`}$("harmonicsBody").innerHTML=rows||'<tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr>';$("toggleHarmonics").textContent=showAllHarmonics?"H1〜H10だけ表示":"H11以降も表示"}
