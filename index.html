@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.11.1</title>
+<title>歌唱音響分析器 v0.11.2</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -126,7 +126,7 @@ progress{width:100%;height:14px;margin-top:10px}
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.11.1</h1>
+<h1>歌唱音響分析器 v0.11.2</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 
@@ -396,7 +396,9 @@ progress{width:100%;height:14px;margin-top:10px}
   </select>
 </div>
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
-<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.11.1では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>倍音間レベル / ピーク−倍音間差</strong><br>
+倍音間レベルは、隣り合う倍音ピークの中間領域の相対レベルです。0 dBに近いほど、倍音の間にも成分が多く残ります。ピーク−倍音間差は、倍音ピークとその周辺の倍音間レベルとの差で、大きいほど櫛状の倍音骨格が明瞭です。<br><br>
+<strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.11.2では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 </section>
 </main>
 
@@ -1520,11 +1522,14 @@ function interHarmonicMetrics(sp){
 
 function summarize(label){
   const sp=points[label].spectrum;
+
   if(!sp||!sp.f0){
     $("count"+label).textContent="—";
     $("highest"+label).textContent="最高倍音: —";
     $("tilt"+label).textContent="スペクトル傾斜: —";
-    $("harmonicMeta"+label).textContent="地点情報: —";
+    if($("floor"+label)) $("floor"+label).textContent="倍音間レベル: —";
+    if($("contrast"+label)) $("contrast"+label).textContent="ピーク−倍音間差: —";
+    if($("harmonicMeta"+label)) $("harmonicMeta"+label).textContent="地点情報: —";
     return;
   }
 
@@ -1539,10 +1544,22 @@ function summarize(label){
 
   $("count"+label).textContent=`${c30} / ${c40} / ${c50}`;
   $("highest"+label).textContent="−40 dB以上の最高倍音: "+(highest40?`H${highest40}`:"—");
+
   const tilt=spectralTiltDbPerOctave(sp);
   $("tilt"+label).textContent="スペクトル傾斜: "+(tilt==null?"—":`${tilt.toFixed(1)} dB/oct`);
-  const p=points[label];
-  $("harmonicMeta"+label).textContent=`${trackDisplayName(p.track)} / ${p.time.toFixed(3)} s / F0 ${sp.f0.toFixed(1)} Hz`;
+
+  const ihn=interHarmonicMetrics(sp);
+  if($("floor"+label)){
+    $("floor"+label).textContent="倍音間レベル: "+(ihn?`${ihn.floorDb.toFixed(1)} dB`:"—");
+  }
+  if($("contrast"+label)){
+    $("contrast"+label).textContent="ピーク−倍音間差: "+(ihn?`${ihn.contrastDb.toFixed(1)} dB`:"—");
+  }
+
+  if($("harmonicMeta"+label)){
+    const p=points[label];
+    $("harmonicMeta"+label).textContent=`${trackDisplayName(p.track)} / ${p.time.toFixed(3)} s / F0 ${sp.f0.toFixed(1)} Hz`;
+  }
 }
 
 function updateHarmonics(){
@@ -1652,7 +1669,7 @@ function saveSpectrumPng(){
 
   ctx.fillStyle="#667085";
   ctx.font="18px system-ui";
-  ctx.fillText("歌唱音響分析器 v0.11.1",80,860);
+  ctx.fillText("歌唱音響分析器 v0.11.2",80,860);
 
   out.toBlob(blob=>{
     if(!blob)return;
