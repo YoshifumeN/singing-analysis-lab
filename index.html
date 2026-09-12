@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.13.0</title>
+<title>歌唱音響分析器 v0.14.0</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -136,7 +136,7 @@ progress{width:100%;height:14px;margin-top:10px}
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.13.0</h1>
+<h1>歌唱音響分析器 v0.14.0</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 
@@ -337,7 +337,8 @@ progress{width:100%;height:14px;margin-top:10px}
 <div class="section-title">2A. アーティキュレーション解析（RMS振幅包絡）</div>
 <div class="controls" style="margin-bottom:10px">
   <span>解析対象：各録音のクリップ区間</span>
-  <button id="saveArticulationCsv">CSV保存</button>
+  <button id="saveArticulationCsv">区間指標CSV保存</button>
+  <button id="savePeakCsv">ピーク個別CSV保存</button>
 </div>
 <p class="hint">各クリップ内の20 ms RMS包絡を5 ms刻みで解析します。AttackはRMS包絡の動的範囲10→90%、Fallは90→10%に要する時間です。閾値はクリップ内の低レベル側（5パーセンタイル）と最大値の間で正規化します。「最深内部谷」は、隣接する主要ピーク間で最もRMSが落ちた谷です。これらは発声開始・終了・再起動の探索用指標であり、絶対音圧や声門運動を直接測っているわけではありません。</p>
 
@@ -355,6 +356,21 @@ progress{width:100%;height:14px;margin-top:10px}
       <div class="articulation-metric"><div class="k">主要ピーク数</div><div id="majorPeaks1" class="v">—</div></div>
       <div class="articulation-metric"><div class="k">最深内部谷</div><div id="valleyDepth1" class="v">—</div></div>
       <div class="articulation-metric"><div class="k">谷の低レベル継続</div><div id="valleyDuration1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">主ピーク50%幅</div><div id="peakWidth50_1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">RMS 50%占有</div><div id="occupancy50_1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">RMS 70%占有</div><div id="occupancy70_1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">第1–第2ピーク間隔</div><div id="peakSpacing12_1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">第1–第2ピーク間の谷</div><div id="valley12_1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">台地指数</div><div id="plateauIndex1" class="v">—</div></div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="hint"><strong>主要ピーク個別</strong>（時刻 / 相対高さ / 50%幅）</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Peak</th><th>時刻</th><th>相対高さ</th><th>50%幅</th></tr></thead>
+          <tbody id="peakTable1"><tr><td colspan="4" style="text-align:center;color:#667085">—</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -371,6 +387,21 @@ progress{width:100%;height:14px;margin-top:10px}
       <div class="articulation-metric"><div class="k">主要ピーク数</div><div id="majorPeaks2" class="v">—</div></div>
       <div class="articulation-metric"><div class="k">最深内部谷</div><div id="valleyDepth2" class="v">—</div></div>
       <div class="articulation-metric"><div class="k">谷の低レベル継続</div><div id="valleyDuration2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">主ピーク50%幅</div><div id="peakWidth50_2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">RMS 50%占有</div><div id="occupancy50_2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">RMS 70%占有</div><div id="occupancy70_2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">第1–第2ピーク間隔</div><div id="peakSpacing12_2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">第1–第2ピーク間の谷</div><div id="valley12_2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">台地指数</div><div id="plateauIndex2" class="v">—</div></div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="hint"><strong>主要ピーク個別</strong>（時刻 / 相対高さ / 50%幅）</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Peak</th><th>時刻</th><th>相対高さ</th><th>50%幅</th></tr></thead>
+          <tbody id="peakTable2"><tr><td colspan="4" style="text-align:center;color:#667085">—</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -387,11 +418,26 @@ progress{width:100%;height:14px;margin-top:10px}
       <div class="articulation-metric"><div class="k">主要ピーク数</div><div id="majorPeaks3" class="v">—</div></div>
       <div class="articulation-metric"><div class="k">最深内部谷</div><div id="valleyDepth3" class="v">—</div></div>
       <div class="articulation-metric"><div class="k">谷の低レベル継続</div><div id="valleyDuration3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">主ピーク50%幅</div><div id="peakWidth50_3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">RMS 50%占有</div><div id="occupancy50_3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">RMS 70%占有</div><div id="occupancy70_3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">第1–第2ピーク間隔</div><div id="peakSpacing12_3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">第1–第2ピーク間の谷</div><div id="valley12_3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">台地指数</div><div id="plateauIndex3" class="v">—</div></div>
+    </div>
+    <div style="margin-top:12px">
+      <div class="hint"><strong>主要ピーク個別</strong>（時刻 / 相対高さ / 50%幅）</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Peak</th><th>時刻</th><th>相対高さ</th><th>50%幅</th></tr></thead>
+          <tbody id="peakTable3"><tr><td colspan="4" style="text-align:center;color:#667085">—</td></tr></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
-<p class="hint" style="margin-top:10px"><strong>読み方：</strong>最大上昇・下降速度は、クリップ内の動的範囲を100%としたときの「10 msあたりの変化量」です。最深内部谷は「谷のRMS / 両隣ピークの平均RMS」と、その比から計算した谷深さ（dB）を表示します。谷の低レベル継続は、その谷周辺でRMSが両隣ピーク平均の50%未満にある時間です。</p>
+<p class="hint" style="margin-top:10px"><strong>読み方：</strong>最大上昇・下降速度は、クリップ内の動的範囲を100%としたときの「10 msあたりの変化量」です。最深内部谷は「谷のRMS / 両隣ピークの平均RMS」と、その比から計算した谷深さ（dB）を表示します。谷の低レベル継続は、その谷周辺でRMSが両隣ピーク平均の50%未満にある時間です。主ピーク50%幅は最大ピーク周辺で正規化RMSが50%以上を連続して保つ時間です。RMS 50%/70%占有は、クリップ全体のうち正規化RMSが各閾値以上にある総時間と割合です。台地指数は「70%占有時間 ÷ 50%占有時間」で、1に近いほど高いRMSを広い時間範囲で維持する台地状、0に近いほど尖ったピーク状です。主要ピーク数は音節内部の子音・母音構造でも増えるため、発声再起動回数とは同一視しません。</p>
 </section>
 
 
@@ -482,7 +528,7 @@ progress{width:100%;height:14px;margin-top:10px}
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
 <div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>倍音間レベル / ピーク−倍音間差</strong><br>
 倍音間レベルは、隣り合う倍音ピークの中間領域の相対レベルです。0 dBに近いほど、倍音の間にも成分が多く残ります。ピーク−倍音間差は、倍音ピークとその周辺の倍音間レベルとの差で、大きいほど櫛状の倍音骨格が明瞭です。<br><br>
-<strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.13.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.14.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 
 <div style="margin-top:18px">
   <div class="section-title" style="font-size:1rem;margin-bottom:8px">倍音間の谷（H1–H2、H2–H3…）</div>
@@ -1205,6 +1251,27 @@ function smoothSeries(values,radius=1){
   return out;
 }
 
+
+function contiguousWidthAtLevel(env,norm,idx,level){
+  if(idx==null||idx<0||idx>=norm.length)return null;
+  let l=idx,r=idx;
+  while(l>0&&norm[l-1]>=level)l--;
+  while(r<norm.length-1&&norm[r+1]>=level)r++;
+  return {left:l,right:r,widthMs:Math.max(0,(env[r].t-env[l].t)*1000)};
+}
+
+function occupancyAtLevel(env,norm,level){
+  if(env.length<2)return {timeMs:0,ratio:0};
+  let total=0,active=0;
+  for(let i=1;i<env.length;i++){
+    const dt=env[i].t-env[i-1].t;
+    if(dt<=0)continue;
+    total+=dt;
+    if(norm[i]>=level||norm[i-1]>=level)active+=dt;
+  }
+  return {timeMs:active*1000,ratio:total>0?active/total:0};
+}
+
 function articulationAnalysis(n){
   const range=getClipRange(n);
   const tr=tracks[n];
@@ -1318,19 +1385,58 @@ function articulationAnalysis(n){
     if(!deepest||item.depthDb>deepest.depthDb)deepest=item;
   }
 
+  const peakWidth50=contiguousWidthAtLevel(env,norm,peakIdx,0.50);
+  const occupancy50=occupancyAtLevel(env,norm,0.50);
+  const occupancy70=occupancyAtLevel(env,norm,0.70);
+  const plateauIndex=occupancy50.timeMs>0?occupancy70.timeMs/occupancy50.timeMs:null;
+
+  const peakDetails=interiorMajor.map((idx,j)=>{
+    const level=Math.max(0.05,norm[idx]*0.50);
+    const width=contiguousWidthAtLevel(env,norm,idx,level);
+    return {
+      number:j+1,idx,
+      timeMs:(env[idx].t-range[0])*1000,
+      relativeHeight:norm[idx],
+      width50Ms:width?width.widthMs:null
+    };
+  });
+
+  let firstSecond=null;
+  if(interiorMajor.length>=2){
+    const i1=interiorMajor[0],i2=interiorMajor[1];
+    let vi=i1+1;
+    for(let i=i1+1;i<i2;i++)if(raw[i]<raw[vi])vi=i;
+    const neighborMean=(raw[i1]+raw[i2])/2;
+    if(neighborMean>0){
+      const ratio=Math.max(1e-9,raw[vi]/neighborMean);
+      firstSecond={
+        spacingMs:(env[i2].t-env[i1].t)*1000,
+        valleyRatio:ratio,
+        valleyDepthDb:-20*Math.log10(ratio),
+        valleyTimeMs:(env[vi].t-range[0])*1000
+      };
+    }
+  }
+
   return {
     range,env,raw,norm,floor,peak,peakIdx,
     attackLo,attackHi,attackMs,riseSlope,
     fallHi,fallLo,fallMs,fallSlope,
-    major:interiorMajor,deepest
+    major:interiorMajor,deepest,
+    peakWidth50,occupancy50,occupancy70,plateauIndex,
+    peakDetails,firstSecond
   };
 }
 
 function resetArticulationDisplay(n,msg="クリップを指定してください。"){
   $("artStatus"+n).textContent=msg;
-  for(const id of ["attackTime","attackSlope","peakTime","fallTime","fallSlope","majorPeaks","valleyDepth","valleyDuration"]){
-    $(id+n).textContent="—";
+  for(const id of ["attackTime","attackSlope","peakTime","fallTime","fallSlope","majorPeaks","valleyDepth","valleyDuration",
+                   "peakWidth50_","occupancy50_","occupancy70_","peakSpacing12_","valley12_","plateauIndex"]){
+    const el=$(id+n);
+    if(el)el.textContent="—";
   }
+  const pt=$("peakTable"+n);
+  if(pt)pt.innerHTML='<tr><td colspan="4" style="text-align:center;color:#667085">—</td></tr>';
   const c=$("artCanvas"+n),ctx=clearCanvas(c);
   ctx.fillStyle="#667085";
   ctx.font="14px system-ui";
@@ -1361,6 +1467,14 @@ function drawArticulationCanvas(n,a){
     ctx.fillText((t-t0).toFixed(2)+" s",x,h-8);
   }
 
+  for(const level of [0.5,0.7]){
+    const y=padT+(1-level)*ph;
+    ctx.strokeStyle=level===0.5?"#98a2b3":"#667085";
+    ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+pw,y);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
   ctx.strokeStyle="#2563eb";
   ctx.lineWidth=2;
   ctx.beginPath();
@@ -1370,6 +1484,17 @@ function drawArticulationCanvas(n,a){
     if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   });
   ctx.stroke();
+
+  ctx.fillStyle="#111827";
+  for(let j=0;j<a.major.length;j++){
+    const idx=a.major[j];
+    const x=padL+(a.env[idx].t-t0)/(t1-t0)*pw;
+    const y=padT+(1-a.norm[idx])*ph;
+    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fill();
+    ctx.font="10px system-ui";
+    ctx.textAlign="center";
+    ctx.fillText(`P${j+1}`,x,Math.max(padT+10,y-7));
+  }
 
   function markIndex(idx,stroke,label){
     if(idx==null)return;
@@ -1426,6 +1551,31 @@ function updateArticulation(n){
     $("valleyDuration"+n).textContent="—";
   }
 
+  $("peakWidth50_"+n).textContent=a.peakWidth50?`${a.peakWidth50.widthMs.toFixed(1)} ms`:"—";
+  $("occupancy50_"+n).textContent=`${a.occupancy50.timeMs.toFixed(1)} ms / ${(a.occupancy50.ratio*100).toFixed(1)}%`;
+  $("occupancy70_"+n).textContent=`${a.occupancy70.timeMs.toFixed(1)} ms / ${(a.occupancy70.ratio*100).toFixed(1)}%`;
+  $("plateauIndex"+n).textContent=a.plateauIndex==null?"—":a.plateauIndex.toFixed(2);
+
+  if(a.firstSecond){
+    $("peakSpacing12_"+n).textContent=`${a.firstSecond.spacingMs.toFixed(1)} ms`;
+    $("valley12_"+n).textContent=`${(a.firstSecond.valleyRatio*100).toFixed(1)}% / ${a.firstSecond.valleyDepthDb.toFixed(1)} dB`;
+  }else{
+    $("peakSpacing12_"+n).textContent="—";
+    $("valley12_"+n).textContent="—";
+  }
+
+  const table=$("peakTable"+n);
+  if(a.peakDetails.length){
+    table.innerHTML=a.peakDetails.map(p=>`<tr>
+      <td>P${p.number}</td>
+      <td>${p.timeMs.toFixed(1)} ms</td>
+      <td>${(p.relativeHeight*100).toFixed(1)}%</td>
+      <td>${p.width50Ms==null?"—":p.width50Ms.toFixed(1)+" ms"}</td>
+    </tr>`).join("");
+  }else{
+    table.innerHTML='<tr><td colspan="4" style="text-align:center;color:#667085">主要ピークなし</td></tr>';
+  }
+
   drawArticulationCanvas(n,a);
 }
 
@@ -1440,7 +1590,12 @@ function saveArticulationCsv(){
     "attack_10_90_ms","max_rise_percent_per_10ms","peak_time_from_clip_start_ms",
     "fall_90_10_ms","max_fall_percent_per_10ms","major_peak_count",
     "deepest_valley_ratio_percent","deepest_valley_depth_db",
-    "valley_below_50percent_duration_ms","valley_time_s"
+    "valley_below_50percent_duration_ms","valley_time_s",
+    "global_peak_width_50_ms",
+    "occupancy_50_ms","occupancy_50_percent",
+    "occupancy_70_ms","occupancy_70_percent",
+    "plateau_index_70_over_50",
+    "peak1_peak2_spacing_ms","peak1_peak2_valley_ratio_percent","peak1_peak2_valley_depth_db"
   ];
   const rows=[header.join(",")];
 
@@ -1460,7 +1615,14 @@ function saveArticulationCsv(){
       a.deepest?a.deepest.ratio*100:"",
       a.deepest?a.deepest.depthDb:"",
       a.deepest?a.deepest.lowDurationMs:"",
-      a.deepest?a.deepest.time:""
+      a.deepest?a.deepest.time:"",
+      a.peakWidth50?a.peakWidth50.widthMs:"",
+      a.occupancy50.timeMs,a.occupancy50.ratio*100,
+      a.occupancy70.timeMs,a.occupancy70.ratio*100,
+      a.plateauIndex??"",
+      a.firstSecond?a.firstSecond.spacingMs:"",
+      a.firstSecond?a.firstSecond.valleyRatio*100:"",
+      a.firstSecond?a.firstSecond.valleyDepthDb:""
     ].map(articulationCsvEscape);
     rows.push(row.join(","));
   }
@@ -1483,6 +1645,39 @@ function saveArticulationCsv(){
 }
 
 $("saveArticulationCsv").onclick=saveArticulationCsv;
+
+function savePeakCsv(){
+  const header=["track","track_label","clip_start_s","clip_end_s","peak_number","peak_time_ms","relative_height_percent","width_50_ms"];
+  const rows=[header.join(",")];
+  let count=0;
+  for(const n of TRACK_IDS){
+    const a=articulationAnalysis(n);
+    if(!a)continue;
+    for(const p of a.peakDetails){
+      count++;
+      rows.push([
+        n,getTrackLabel(n),a.range[0],a.range[1],
+        p.number,p.timeMs,p.relativeHeight*100,p.width50Ms??""
+      ].map(articulationCsvEscape).join(","));
+    }
+  }
+  if(!count){
+    alert("主要ピークを含むクリップを指定してから保存してください。");
+    return;
+  }
+  const blob=new Blob(["\ufeff"+rows.join("\n")],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const d=new Date(),pad=x=>String(x).padStart(2,"0");
+  a.download=`articulation_peaks_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.csv`;
+  a.href=url;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+$("savePeakCsv").onclick=savePeakCsv;
+
 
 function buildWaveBase(n){
   const tr=tracks[n];
@@ -2420,7 +2615,7 @@ function saveSpectrumPng(){
 
   ctx.fillStyle="#667085";
   ctx.font="18px system-ui";
-  ctx.fillText("歌唱音響分析器 v0.13.0",80,860);
+  ctx.fillText("歌唱音響分析器 v0.14.0",80,860);
 
   out.toBlob(blob=>{
     if(!blob)return;
