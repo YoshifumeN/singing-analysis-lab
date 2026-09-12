@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>歌唱音響分析器 v0.12.1</title>
+<title>歌唱音響分析器 v0.13.0</title>
 <style>
 :root{--bg:#f6f7f9;--panel:#fff;--text:#1f2328;--muted:#667085;--line:#d0d5dd;--accent:#2563eb}
 *{box-sizing:border-box}
@@ -43,7 +43,17 @@ progress{width:100%;height:14px;margin-top:10px}
 .wave-wrap{margin-bottom:16px}
 .wave-wrap>canvas{height:140px}
 .clip-panel{display:none;margin-top:8px;padding:8px;border:1px dashed #d0d5dd;border-radius:8px;background:#fafafa}
+
 .clip-panel.active{display:block}
+.articulation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.articulation-card{border:1px solid #e4e7ec;border-radius:10px;padding:12px;background:#fff}
+.articulation-card canvas{width:100%;height:auto;display:block;margin-top:8px}
+.articulation-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.articulation-metric{border:1px solid #eaecf0;border-radius:8px;padding:7px 8px;background:#fcfcfd}
+.articulation-metric .k{font-size:.78rem;color:#667085}
+.articulation-metric .v{font-size:.95rem;font-weight:650;margin-top:2px}
+@media(max-width:900px){.articulation-grid{grid-template-columns:1fr}}
+
 .clip-panel canvas{height:92px}
 .clip-info{font-size:.82rem;color:var(--muted);margin-bottom:5px}
 .wave-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
@@ -126,7 +136,7 @@ progress{width:100%;height:14px;margin-top:10px}
 </head>
 <body>
 <main>
-<h1>歌唱音響分析器 v0.12.1</h1>
+<h1>歌唱音響分析器 v0.13.0</h1>
 <div class="subtitle">歌唱伝達論の仮説検証用。音声はブラウザ内だけで処理します。</div>
 
 
@@ -318,12 +328,71 @@ progress{width:100%;height:14px;margin-top:10px}
   </div>
 </div>
 
-<p class="hint">灰色＝瞬間的な波形振幅、青＝20 ms窓で計算したRMS振幅包絡、黒の破線＝現在の再生位置です。A/B/Cを選んで波形をクリックすると解析地点を指定できます。「再生位置を選択」ではクリック地点へ移動します。クリップ点1・2を指定すると、その区間を小窓に拡大し、3のF0もその区間だけ表示します。</p>
+<p class="hint">灰色＝瞬間的な波形振幅、青＝20 ms窓で計算したRMS振幅包絡、黒の破線＝現在の再生位置です。A/B/Cを選んで波形をクリックすると解析地点を指定できます。「再生位置を選択」ではクリック地点へ移動します。クリップ点1・2を指定すると、その区間を小窓に拡大し、3のF0もその区間だけ表示します。クリップ区間は下の「2A. アーティキュレーション解析」の解析範囲にも使います。</p>
 
 </div>
 </section>
 
+<section class="panel">
+<div class="section-title">2A. アーティキュレーション解析（RMS振幅包絡）</div>
+<div class="controls" style="margin-bottom:10px">
+  <span>解析対象：各録音のクリップ区間</span>
+  <button id="saveArticulationCsv">CSV保存</button>
+</div>
+<p class="hint">各クリップ内の20 ms RMS包絡を5 ms刻みで解析します。AttackはRMS包絡の動的範囲10→90%、Fallは90→10%に要する時間です。閾値はクリップ内の低レベル側（5パーセンタイル）と最大値の間で正規化します。「最深内部谷」は、隣接する主要ピーク間で最もRMSが落ちた谷です。これらは発声開始・終了・再起動の探索用指標であり、絶対音圧や声門運動を直接測っているわけではありません。</p>
 
+<div class="articulation-grid">
+  <div class="articulation-card">
+    <div class="wave-head"><strong>録音 1</strong><span id="artLabel1" class="inline-track-label"></span></div>
+    <div id="artStatus1" class="status">クリップを指定してください。</div>
+    <canvas id="artCanvas1" width="720" height="180"></canvas>
+    <div class="articulation-metrics">
+      <div class="articulation-metric"><div class="k">Attack 10→90%</div><div id="attackTime1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最大上昇速度</div><div id="attackSlope1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">ピーク時刻</div><div id="peakTime1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">Fall 90→10%</div><div id="fallTime1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最大下降速度</div><div id="fallSlope1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">主要ピーク数</div><div id="majorPeaks1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最深内部谷</div><div id="valleyDepth1" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">谷の低レベル継続</div><div id="valleyDuration1" class="v">—</div></div>
+    </div>
+  </div>
+
+  <div class="articulation-card">
+    <div class="wave-head"><strong>録音 2</strong><span id="artLabel2" class="inline-track-label"></span></div>
+    <div id="artStatus2" class="status">クリップを指定してください。</div>
+    <canvas id="artCanvas2" width="720" height="180"></canvas>
+    <div class="articulation-metrics">
+      <div class="articulation-metric"><div class="k">Attack 10→90%</div><div id="attackTime2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最大上昇速度</div><div id="attackSlope2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">ピーク時刻</div><div id="peakTime2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">Fall 90→10%</div><div id="fallTime2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最大下降速度</div><div id="fallSlope2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">主要ピーク数</div><div id="majorPeaks2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最深内部谷</div><div id="valleyDepth2" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">谷の低レベル継続</div><div id="valleyDuration2" class="v">—</div></div>
+    </div>
+  </div>
+
+  <div class="articulation-card">
+    <div class="wave-head"><strong>録音 3</strong><span id="artLabel3" class="inline-track-label"></span></div>
+    <div id="artStatus3" class="status">クリップを指定してください。</div>
+    <canvas id="artCanvas3" width="720" height="180"></canvas>
+    <div class="articulation-metrics">
+      <div class="articulation-metric"><div class="k">Attack 10→90%</div><div id="attackTime3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最大上昇速度</div><div id="attackSlope3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">ピーク時刻</div><div id="peakTime3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">Fall 90→10%</div><div id="fallTime3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最大下降速度</div><div id="fallSlope3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">主要ピーク数</div><div id="majorPeaks3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">最深内部谷</div><div id="valleyDepth3" class="v">—</div></div>
+      <div class="articulation-metric"><div class="k">谷の低レベル継続</div><div id="valleyDuration3" class="v">—</div></div>
+    </div>
+  </div>
+</div>
+
+<p class="hint" style="margin-top:10px"><strong>読み方：</strong>最大上昇・下降速度は、クリップ内の動的範囲を100%としたときの「10 msあたりの変化量」です。最深内部谷は「谷のRMS / 両隣ピークの平均RMS」と、その比から計算した谷深さ（dB）を表示します。谷の低レベル継続は、その谷周辺でRMSが両隣ピーク平均の50%未満にある時間です。</p>
+</section>
 
 
 <section class="panel small">
@@ -413,7 +482,7 @@ progress{width:100%;height:14px;margin-top:10px}
 <div class="row"><div><table><thead><tr><th>成分</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody id="harmonicsBody"><tr><td colspan="4" style="text-align:center;color:#667085">A/B/Cの地点を指定してください。</td></tr></tbody></table></div>
 <div class="hint"><strong>表の意味</strong><br>H1＝F0付近、H2＝2×F0付近、H3＝3×F0付近…のピークです。各地点について、その地点の最大ピークを0 dBとして相対強度を表示します。各セルには「実周波数 / 相対強度」を表示します。選択した周波数上限までの倍音を内部ではすべて計算しています。<br><br><strong>実効倍音の目安</strong><br>−30 dB以上、−40 dB以上、−50 dB以上の倍音数をそれぞれ表示します。「最高倍音」は−40 dB以上で残っている最も高い倍音番号です。<br><br><strong>倍音間レベル / ピーク−倍音間差</strong><br>
 倍音間レベルは、隣り合う倍音ピークの中間領域の相対レベルです。0 dBに近いほど、倍音の間にも成分が多く残ります。ピーク−倍音間差は、倍音ピークとその周辺の倍音間レベルとの差で、大きいほど櫛状の倍音骨格が明瞭です。<br><br>
-<strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.12.1では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
+<strong>今見ること</strong><br>・特定帯域だけが卓越する声か<br>・広い帯域で倍音が比較的強く残る声か<br>・遠吠え声といきみ声で分布がどう違うか<br>・発声開始直後と定常部で倍音構造がどう変わるか<br><br>v0.13.0では評価スコアを作らず、耳で聞いた現象とデータを対応させることを優先します。</div></div>
 
 <div style="margin-top:18px">
   <div class="section-title" style="font-size:1rem;margin-bottom:8px">倍音間の谷（H1–H2、H2–H3…）</div>
@@ -446,6 +515,7 @@ for(const n of TRACK_IDS){
   tracks[n]={
     buffer:null,mono:null,source:null,recorder:null,chunks:[],f0:[],
     recordingStream:null,recordMode:null,pcmSource:null,processor:null,muteGain:null,pcmChunks:[],
+    articulation:null,
     waveBase:null,playPos:0,playStartCtx:0,playStartOffset:0,raf:null,isPlaying:false,clip1:null,clip2:null
   };
 }
@@ -481,8 +551,10 @@ function refreshTrackLabels(){
     const text=label ? `｜${label}` : "";
     const w=$("waveLabel"+n);
     const f=$("f0Label"+n);
+    const a=$("artLabel"+n);
     if(w)w.textContent=text;
     if(f)f.textContent=text;
+    if(a)a.textContent=text;
   }
   updateSpectrumLegend();
   updateHarmonics();
@@ -624,15 +696,18 @@ function setClipPoint(n,which,t){
   drawWave(n);
   drawClipPreview(n);
   drawF0(n);
+  updateArticulation(n);
   if(spectrumMode==="clipAverage")refreshPointSpectraForTrack(n);
 }
 
 function clearClip(n){
   tracks[n].clip1=null;
   tracks[n].clip2=null;
+  tracks[n].articulation=null;
   drawWave(n);
   drawClipPreview(n);
   drawF0(n);
+  updateArticulation(n);
   if(spectrumMode==="clipAverage")refreshPointSpectraForTrack(n);
 }
 TRACK_IDS.forEach(n=>{
@@ -1038,6 +1113,7 @@ function prepareTrack(n){
   tr.playPos=0;
   tr.clip1=null;
   tr.clip2=null;
+  tr.articulation=null;
   clearPointsForTrack(n);
 
   tr.mono=new Float32Array(buf.length);
@@ -1056,6 +1132,7 @@ function prepareTrack(n){
   drawWave(n);
   drawClipPreview(n);
   drawF0(n);
+  updateArticulation(n);
   updatePlayTimeText(n);
   drawSpectrumComparison();
   updateHarmonics();
@@ -1083,6 +1160,329 @@ function drawAxes(ctx,w,h){
     ctx.stroke();
   }
 }
+
+
+function percentile(values,p){
+  if(!values.length)return null;
+  const a=[...values].sort((x,y)=>x-y);
+  const pos=(a.length-1)*p;
+  const lo=Math.floor(pos),hi=Math.ceil(pos);
+  if(lo===hi)return a[lo];
+  const f=pos-lo;
+  return a[lo]*(1-f)+a[hi]*f;
+}
+
+function rmsEnvelopeForRange(n,t0,t1){
+  const tr=tracks[n];
+  if(!tr?.mono||!tr.buffer)return [];
+  const sr=tr.buffer.sampleRate;
+  const win=Math.max(32,Math.floor(sr*0.020));
+  const hop=Math.max(16,Math.floor(sr*0.005));
+  const start=Math.max(0,Math.floor(t0*sr));
+  const end=Math.min(tr.mono.length,Math.ceil(t1*sr));
+  const env=[];
+
+  for(let s=start;s<end;s+=hop){
+    const a=Math.max(0,s-Math.floor(win/2));
+    const b=Math.min(tr.mono.length,s+Math.ceil(win/2));
+    let ss=0,cnt=0;
+    for(let i=a;i<b;i++){const v=tr.mono[i];ss+=v*v;cnt++}
+    const rms=Math.sqrt(ss/Math.max(1,cnt));
+    env.push({t:s/sr,r:rms});
+  }
+  return env;
+}
+
+function smoothSeries(values,radius=1){
+  const out=new Array(values.length);
+  for(let i=0;i<values.length;i++){
+    let s=0,c=0;
+    for(let j=Math.max(0,i-radius);j<=Math.min(values.length-1,i+radius);j++){
+      s+=values[j];c++;
+    }
+    out[i]=s/Math.max(1,c);
+  }
+  return out;
+}
+
+function articulationAnalysis(n){
+  const range=getClipRange(n);
+  const tr=tracks[n];
+  if(!range||!tr?.buffer||!tr.mono)return null;
+
+  const env=rmsEnvelopeForRange(n,range[0],range[1]);
+  if(env.length<5)return null;
+
+  const raw=env.map(x=>x.r);
+  const floor=percentile(raw,0.05)??0;
+  const peak=Math.max(...raw);
+  const dyn=Math.max(1e-12,peak-floor);
+  let norm=raw.map(r=>Math.max(0,Math.min(1,(r-floor)/dyn)));
+  norm=smoothSeries(norm,1);
+
+  let peakIdx=0;
+  for(let i=1;i<norm.length;i++)if(norm[i]>norm[peakIdx])peakIdx=i;
+
+  // Main attack: first 90% crossing before the global peak,
+  // with the last preceding <=10% point as onset.
+  let attackHi=null,attackLo=null;
+  for(let i=0;i<=peakIdx;i++){
+    if(norm[i]>=0.90){attackHi=i;break}
+  }
+  if(attackHi!=null){
+    for(let i=attackHi-1;i>=0;i--){
+      if(norm[i]<=0.10){attackLo=i;break}
+    }
+  }
+
+  // Final fall: use the last >=90% point, then first subsequent <=10%.
+  let fallHi=null,fallLo=null;
+  for(let i=norm.length-1;i>=peakIdx;i--){
+    if(norm[i]>=0.90){fallHi=i;break}
+  }
+  if(fallHi!=null){
+    for(let i=fallHi+1;i<norm.length;i++){
+      if(norm[i]<=0.10){fallLo=i;break}
+    }
+  }
+
+  function maxSlope(i0,i1,dir){
+    if(i0==null||i1==null||i1<=i0)return null;
+    let best=null;
+    for(let i=i0+1;i<=i1;i++){
+      const dt=env[i].t-env[i-1].t;
+      if(dt<=0)continue;
+      const slope=(norm[i]-norm[i-1])/dt; // fraction per second
+      const score=dir>0?slope:-slope;
+      if(best==null||score>best)best=score;
+    }
+    return best;
+  }
+
+  const attackMs=(attackLo!=null&&attackHi!=null)?(env[attackHi].t-env[attackLo].t)*1000:null;
+  const fallMs=(fallHi!=null&&fallLo!=null)?(env[fallLo].t-env[fallHi].t)*1000:null;
+  const riseSlope=maxSlope(attackLo,attackHi,1);
+  const fallSlope=maxSlope(fallHi,fallLo,-1);
+
+  // Major local peaks for exploratory re-attack / inter-syllabic valley analysis.
+  const minPeakLevel=0.25;
+  const minPeakSep=0.060; // s
+  const candidates=[];
+  for(let i=1;i<norm.length-1;i++){
+    if(norm[i]>=minPeakLevel&&norm[i]>=norm[i-1]&&norm[i]>=norm[i+1]){
+      candidates.push(i);
+    }
+  }
+
+  const major=[];
+  for(const idx of candidates){
+    if(!major.length){
+      major.push(idx);
+      continue;
+    }
+    const prev=major[major.length-1];
+    if(env[idx].t-env[prev].t<minPeakSep){
+      if(norm[idx]>norm[prev])major[major.length-1]=idx;
+    }else{
+      major.push(idx);
+    }
+  }
+
+  // Keep endpoints from being counted as "major peaks" unless they are genuinely interior.
+  const interiorMajor=major.filter(i=>i>1&&i<norm.length-2);
+
+  let deepest=null;
+  for(let p=0;p<interiorMajor.length-1;p++){
+    const i1=interiorMajor[p],i2=interiorMajor[p+1];
+    if(env[i2].t-env[i1].t<0.050)continue;
+
+    let vi=i1+1;
+    for(let i=i1+1;i<i2;i++)if(raw[i]<raw[vi])vi=i;
+
+    const neighborMean=(raw[i1]+raw[i2])/2;
+    if(neighborMean<=0)continue;
+    const ratio=Math.max(1e-9,raw[vi]/neighborMean);
+    const depthDb=-20*Math.log10(ratio);
+
+    const half=neighborMean*0.50;
+    let l=vi,r=vi;
+    while(l>i1&&raw[l-1]<half)l--;
+    while(r<i2&&raw[r+1]<half)r++;
+    const lowDuration=Math.max(0,env[r].t-env[l].t);
+
+    const item={
+      left:i1,right:i2,valley:vi,ratio,depthDb,
+      lowDurationMs:lowDuration*1000,
+      time:env[vi].t
+    };
+    if(!deepest||item.depthDb>deepest.depthDb)deepest=item;
+  }
+
+  return {
+    range,env,raw,norm,floor,peak,peakIdx,
+    attackLo,attackHi,attackMs,riseSlope,
+    fallHi,fallLo,fallMs,fallSlope,
+    major:interiorMajor,deepest
+  };
+}
+
+function resetArticulationDisplay(n,msg="クリップを指定してください。"){
+  $("artStatus"+n).textContent=msg;
+  for(const id of ["attackTime","attackSlope","peakTime","fallTime","fallSlope","majorPeaks","valleyDepth","valleyDuration"]){
+    $(id+n).textContent="—";
+  }
+  const c=$("artCanvas"+n),ctx=clearCanvas(c);
+  ctx.fillStyle="#667085";
+  ctx.font="14px system-ui";
+  ctx.textAlign="center";
+  ctx.fillText(msg,c.width/2,c.height/2);
+}
+
+function drawArticulationCanvas(n,a){
+  const c=$("artCanvas"+n),ctx=clearCanvas(c),w=c.width,h=c.height;
+  const padL=42,padR=12,padT=14,padB=28;
+  const pw=w-padL-padR,ph=h-padT-padB;
+  const t0=a.range[0],t1=a.range[1];
+
+  ctx.strokeStyle="#eaecf0";
+  ctx.fillStyle="#667085";
+  ctx.font="11px system-ui";
+  ctx.textAlign="right";
+  for(const level of [0,0.1,0.5,0.9,1]){
+    const y=padT+(1-level)*ph;
+    ctx.beginPath();ctx.moveTo(padL,y);ctx.lineTo(padL+pw,y);ctx.stroke();
+    ctx.fillText(Math.round(level*100)+"%",padL-5,y+4);
+  }
+
+  ctx.textAlign="center";
+  for(let i=0;i<=4;i++){
+    const t=t0+(t1-t0)*i/4;
+    const x=padL+pw*i/4;
+    ctx.fillText((t-t0).toFixed(2)+" s",x,h-8);
+  }
+
+  ctx.strokeStyle="#2563eb";
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  a.env.forEach((pt,i)=>{
+    const x=padL+(pt.t-t0)/(t1-t0)*pw;
+    const y=padT+(1-a.norm[i])*ph;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  function markIndex(idx,stroke,label){
+    if(idx==null)return;
+    const x=padL+(a.env[idx].t-t0)/(t1-t0)*pw;
+    ctx.strokeStyle=stroke;
+    ctx.setLineDash([5,4]);
+    ctx.beginPath();ctx.moveTo(x,padT);ctx.lineTo(x,padT+ph);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=stroke;
+    ctx.font="11px system-ui";
+    ctx.textAlign="center";
+    ctx.fillText(label,x,padT+11);
+  }
+
+  markIndex(a.attackLo,"#039855","A10");
+  markIndex(a.attackHi,"#039855","A90");
+  markIndex(a.peakIdx,"#7a5af8","Peak");
+  markIndex(a.fallHi,"#d97706","F90");
+  markIndex(a.fallLo,"#d97706","F10");
+
+  if(a.deepest){
+    markIndex(a.deepest.valley,"#d92d20","Valley");
+  }
+}
+
+function updateArticulation(n){
+  const range=getClipRange(n);
+  if(!range){
+    resetArticulationDisplay(n);
+    return;
+  }
+
+  const a=articulationAnalysis(n);
+  if(!a){
+    resetArticulationDisplay(n,"解析できる長さのクリップを指定してください。");
+    return;
+  }
+
+  tracks[n].articulation=a;
+  $("artStatus"+n).textContent=`解析範囲: ${a.range[0].toFixed(3)}–${a.range[1].toFixed(3)} s（${(a.range[1]-a.range[0]).toFixed(3)} s）`;
+
+  $("attackTime"+n).textContent=a.attackMs==null?"—":`${a.attackMs.toFixed(1)} ms`;
+  $("attackSlope"+n).textContent=a.riseSlope==null?"—":`${(a.riseSlope*0.10*100).toFixed(1)} % / 10 ms`;
+  $("peakTime"+n).textContent=`${((a.env[a.peakIdx].t-a.range[0])*1000).toFixed(1)} ms`;
+  $("fallTime"+n).textContent=a.fallMs==null?"—":`${a.fallMs.toFixed(1)} ms`;
+  $("fallSlope"+n).textContent=a.fallSlope==null?"—":`${(a.fallSlope*0.10*100).toFixed(1)} % / 10 ms`;
+  $("majorPeaks"+n).textContent=`${a.major.length}`;
+
+  if(a.deepest){
+    $("valleyDepth"+n).textContent=`${(a.deepest.ratio*100).toFixed(1)}% / ${a.deepest.depthDb.toFixed(1)} dB`;
+    $("valleyDuration"+n).textContent=`${a.deepest.lowDurationMs.toFixed(1)} ms`;
+  }else{
+    $("valleyDepth"+n).textContent="—";
+    $("valleyDuration"+n).textContent="—";
+  }
+
+  drawArticulationCanvas(n,a);
+}
+
+function articulationCsvEscape(v){
+  const s=String(v??"");
+  return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;
+}
+
+function saveArticulationCsv(){
+  const header=[
+    "track","track_label","clip_start_s","clip_end_s",
+    "attack_10_90_ms","max_rise_percent_per_10ms","peak_time_from_clip_start_ms",
+    "fall_90_10_ms","max_fall_percent_per_10ms","major_peak_count",
+    "deepest_valley_ratio_percent","deepest_valley_depth_db",
+    "valley_below_50percent_duration_ms","valley_time_s"
+  ];
+  const rows=[header.join(",")];
+
+  let count=0;
+  for(const n of TRACK_IDS){
+    const a=articulationAnalysis(n);
+    if(!a)continue;
+    count++;
+    const row=[
+      n,getTrackLabel(n),a.range[0],a.range[1],
+      a.attackMs,
+      a.riseSlope==null?"":a.riseSlope*0.10*100,
+      (a.env[a.peakIdx].t-a.range[0])*1000,
+      a.fallMs,
+      a.fallSlope==null?"":a.fallSlope*0.10*100,
+      a.major.length,
+      a.deepest?a.deepest.ratio*100:"",
+      a.deepest?a.deepest.depthDb:"",
+      a.deepest?a.deepest.lowDurationMs:"",
+      a.deepest?a.deepest.time:""
+    ].map(articulationCsvEscape);
+    rows.push(row.join(","));
+  }
+
+  if(!count){
+    alert("クリップを指定してから保存してください。");
+    return;
+  }
+
+  const blob=new Blob(["\ufeff"+rows.join("\n")],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const d=new Date(),pad=x=>String(x).padStart(2,"0");
+  a.download=`articulation_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}.csv`;
+  a.href=url;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+$("saveArticulationCsv").onclick=saveArticulationCsv;
 
 function buildWaveBase(n){
   const tr=tracks[n];
@@ -2020,7 +2420,7 @@ function saveSpectrumPng(){
 
   ctx.fillStyle="#667085";
   ctx.font="18px system-ui";
-  ctx.fillText("歌唱音響分析器 v0.12.1",80,860);
+  ctx.fillText("歌唱音響分析器 v0.13.0",80,860);
 
   out.toBlob(blob=>{
     if(!blob)return;
@@ -2104,6 +2504,7 @@ window.loadSeparatedVocalsIntoTrack=function(trackNumber,left,right,sampleRate){
   $("status"+n).textContent="ボーカル抽出音声を読み込みました（44.1 kHz）。";
 };
 
+TRACK_IDS.forEach(n=>resetArticulationDisplay(n));
 refreshTrackLabels();
 setSelectionMode("A");
 updateSpectrumLegend();
